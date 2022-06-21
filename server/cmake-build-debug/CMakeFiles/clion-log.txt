@@ -1,0 +1,4 @@
+/home/chen/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/213.5744.254/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/home/chen/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/213.5744.254/bin/ninja/linux/ninja -G Ninja /home/chen/Gobang/server
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/chen/Gobang/server/cmake-build-debug
