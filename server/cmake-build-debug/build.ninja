@@ -74,25 +74,25 @@ build cmake_object_order_depends_target_server: phony || CMakeFiles/server.dir
 
 build CMakeFiles/server.dir/main.cpp.o: CXX_COMPILER__server_Debug /home/chen/Gobang/server/main.cpp || cmake_object_order_depends_target_server
   DEP_FILE = CMakeFiles/server.dir/main.cpp.o.d
-  FLAGS = -g -std=gnu++14
+  FLAGS = -pthread -g -std=gnu++14
   OBJECT_DIR = CMakeFiles/server.dir
   OBJECT_FILE_DIR = CMakeFiles/server.dir
 
 build CMakeFiles/server.dir/thread_pool.cpp.o: CXX_COMPILER__server_Debug /home/chen/Gobang/server/thread_pool.cpp || cmake_object_order_depends_target_server
   DEP_FILE = CMakeFiles/server.dir/thread_pool.cpp.o.d
-  FLAGS = -g -std=gnu++14
+  FLAGS = -pthread -g -std=gnu++14
   OBJECT_DIR = CMakeFiles/server.dir
   OBJECT_FILE_DIR = CMakeFiles/server.dir
 
 build CMakeFiles/server.dir/player.cpp.o: CXX_COMPILER__server_Debug /home/chen/Gobang/server/player.cpp || cmake_object_order_depends_target_server
   DEP_FILE = CMakeFiles/server.dir/player.cpp.o.d
-  FLAGS = -g -std=gnu++14
+  FLAGS = -pthread -g -std=gnu++14
   OBJECT_DIR = CMakeFiles/server.dir
   OBJECT_FILE_DIR = CMakeFiles/server.dir
 
 build CMakeFiles/server.dir/room.cpp.o: CXX_COMPILER__server_Debug /home/chen/Gobang/server/room.cpp || cmake_object_order_depends_target_server
   DEP_FILE = CMakeFiles/server.dir/room.cpp.o.d
-  FLAGS = -g -std=gnu++14
+  FLAGS = -pthread -g -std=gnu++14
   OBJECT_DIR = CMakeFiles/server.dir
   OBJECT_FILE_DIR = CMakeFiles/server.dir
 
@@ -105,7 +105,7 @@ build CMakeFiles/server.dir/room.cpp.o: CXX_COMPILER__server_Debug /home/chen/Go
 # Link the executable server
 
 build server: CXX_EXECUTABLE_LINKER__server_Debug CMakeFiles/server.dir/main.cpp.o CMakeFiles/server.dir/thread_pool.cpp.o CMakeFiles/server.dir/player.cpp.o CMakeFiles/server.dir/room.cpp.o
-  FLAGS = -g
+  FLAGS = -pthread -g
   OBJECT_DIR = CMakeFiles/server.dir
   POST_BUILD = :
   PRE_LINK = :

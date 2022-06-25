@@ -217,6 +217,7 @@ void* task_process(void *arg){
 		if(mp_fd_p.count(sockfd) == 0){
 			std::cout << "error_4\n";
 			close(sockfd);
+			pthread_mutex_unlock(&mutex);
 			return nullptr;
 		}
 		player p = mp_fd_p[sockfd];
@@ -377,6 +378,13 @@ void* task_process(void *arg){
 				//直接转发给客户端
 				write(ano_p.getFd(), buf, cnt);
 				r.mask[1] = false;
+
+				//游戏结束了 删除该房间
+				rooms.remove(r);
+				//删除房间映射
+				delete_key(mp_fd_r, sockfd);
+				delete_key(mp_fd_r, ano_p.getFd());
+				delete_key(mp_id_r, r.room_id);
 				break;
 			}
 			case(TIE_NO):{
