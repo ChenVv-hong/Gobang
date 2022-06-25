@@ -277,197 +277,242 @@ void* task_process(void *arg){
 		room r;
 		//客户端发送数据 进行处理
 		std::vector<std::string> msg = split(buf, '\n');
-//		for(int i = 0; i < msg.size(); i++) std::cout << i <<":" << msg[i] << ' ';
-//		std::cout << '\n';
-		//如果是匹配请求 那么玩家 和 房间 都没创建 要加判断
-		int code = atoi(msg[0].c_str());
-		if(code != CONNECT && code != CREATE_ROOM && code != JOIN_ROOM){
-			//获取房间 和 房间中的player
-			if(mp_fd_p.count(sockfd) == 0){
-				std::cout << "error_1\n";
-				return nullptr;
+		for(int i = 0; i < msg.size(); i++) std::cout << i <<":" << msg[i] << ' ';
+		std::cout << '\n';
+		int index = 0;
+		while(index < msg.size()){
+			//如果是匹配请求 那么玩家 和 房间 都没创建 要加判断
+			int code = atoi(msg[index].c_str());
+			if(code != CONNECT && code != CREATE_ROOM && code != JOIN_ROOM){
+				//获取房间 和 房间中的player
+				if(mp_fd_p.count(sockfd) == 0){
+					std::cout << "error_1\n";
+					pthread_mutex_unlock(&mutex);
+					return nullptr;
+				}
+				p = mp_fd_p[sockfd];
+				if(mp_fd_r.count(sockfd) == 0) {
+					std::cout << "error_2\n";
+					pthread_mutex_unlock(&mutex);
+					return nullptr;
+				}
+				r = mp_fd_r[sockfd];
+				if(!r.anotherPlayer(p, ano_p)){
+					std::cout << "error_3\n";
+					pthread_mutex_unlock(&mutex);
+					return nullptr;
+				}
 			}
-			p = mp_fd_p[sockfd];
-			if(mp_fd_r.count(sockfd) == 0) {
-				std::cout << "error_2\n";
-				return nullptr;
-			}
-			r = mp_fd_r[sockfd];
-			if(!r.anotherPlayer(p, ano_p)){
-				std::cout << "error_3\n";
-				return nullptr;
-			}
-		}
-		switch (atoi(msg[0].c_str())) {
-			case(CONNECT):{
+			switch (code) {
+				case(CONNECT):{
 //				std::cout << "CONNECT\n";
-				//TODO 互斥
-				//匹配 请求 将 玩家 加入到匹配队列
-				if(mp_fd_p.count(sockfd)){
-					//说明 该玩家 已近是在线玩家 直接 添加到匹配队列
+					//TODO 互斥
+					//匹配 请求 将 玩家 加入到匹配队列
+					if(mp_fd_p.count(sockfd)){
+						//说明 该玩家 已近是在线玩家 直接 添加到匹配队列
 //					pthread_mutex_lock(&mutex);
-					matched_pool.push(mp_fd_p[sockfd]);
+						matched_pool.push(mp_fd_p[sockfd]);
 //					pthread_mutex_unlock(&mutex);
-				}else{
-					//说明 该玩家 没有登入过 为他创建角色 并且添加到匹配队列
-					p.setFd(sockfd);
-					p.setNickname(msg[1]);
-					players.push_back(p);
-					//建立映射
-					mp_fd_p[sockfd] = p;
+					}else{
+						//说明 该玩家 没有登入过 为他创建角色 并且添加到匹配队列
+						p.setFd(sockfd);
+						p.setNickname(msg[index + 1]);
+						players.push_back(p);
+						//建立映射
+						mp_fd_p[sockfd] = p;
 //					std::cout << sockfd << ' ' << "p\n";
 
 //					pthread_mutex_lock(&mutex);
-					matched_pool.push(p);
+						matched_pool.push(p);
 //					pthread_mutex_unlock(&mutex);
-				}
-				break;
-			}
-			case(UNDO):{
-				if(r.mask[0]){
-					//说明该房间中有玩家 已近发送了 悔棋请求 那么另一个人的发的不做响应
+					}
+					index += 2;
 					break;
 				}
-				//直接转发给客户端
-				write(ano_p.getFd(), buf, cnt);
-				r.mask[0] = true;
-				break;
-			}
-			case(TIE):{
-				if(r.mask[1]){
-					//说明该房间中有玩家 已近发送了 和棋请求 那么另一个人的发的不做响应
+				case(UNDO):{
+					if(r.mask[0]){
+						//说明该房间中有玩家 已近发送了 悔棋请求 那么另一个人的发的不做响应
+						index++;
+						break;
+					}
+					//直接转发给客户端
+					std::string ss = msg[index] + '\n';
+					write(ano_p.getFd(), ss.c_str(), ss.length());
+					r.mask[0] = true;
+					index++;
 					break;
 				}
-				//直接转发给客户端
-				write(ano_p.getFd(), buf, cnt);
-				r.mask[1] = true;
-				break;
-			}
-			case(SURRENDER):{
-				if(r.mask[2]){
-					//说明该房间中有玩家 已近发送了 投降 那么另一个人发的不做响应
-					break;
-				}
-				write(ano_p.getFd(), buf, cnt);
-				r.mask[2] = true;
+				case(TIE):{
 
-				//TODO 加互斥
-				//投降了 删除该房间
-				rooms.remove(r);
-				//删除房间映射
-				delete_key(mp_fd_r, sockfd);
-				delete_key(mp_fd_r, ano_p.getFd());
-				//删除房间id
-				delete_key(mp_id_r, r.room_id);
-				break;
-			}
-			case(UNDO_YES):{
-				//直接转发给客户端
-				write(ano_p.getFd(), buf, cnt);
-				//请求已被处理
-				r.mask[0] = false;
-				break;
-			}
-			case(UNDO_NO):{
-				//直接转发给客户端
-				write(ano_p.getFd(), buf, cnt);
-				r.mask[0] = false;
-				break;
-			}
-			case(TIE_YES):{
-				//直接转发给客户端
-				write(ano_p.getFd(), buf, cnt);
-				r.mask[1] = false;
+					if(r.mask[1]){
+						//说明该房间中有玩家 已近发送了 和棋请求 那么另一个人的发的不做响应
+						index++;
+						break;
+					}
+					//直接转发给客户端
+					std::string ss = msg[index] + '\n';
+					write(ano_p.getFd(), ss.c_str(), ss.length());
+					r.mask[1] = true;
+					index++;
+					break;
+				}
+				case(SURRENDER):{
 
-				//游戏结束了 删除该房间
-				rooms.remove(r);
-				//删除房间映射
-				delete_key(mp_fd_r, sockfd);
-				delete_key(mp_fd_r, ano_p.getFd());
-				delete_key(mp_id_r, r.room_id);
-				break;
-			}
-			case(TIE_NO):{
-				//直接转发给客户端
-				write(ano_p.getFd(), buf, cnt);
-				r.mask[1] = false;
-				break;
-			}
-			case(SETPIECE):
-			case(MSG):{
-				//这些类型的数据 直接转发给客户端
-				write(ano_p.getFd(), buf, cnt);
-				break;
-			}
-			case(GAMEOVER):{
-				//这些类型的数据 直接转发给客户端
-				//TODO
+					if(r.mask[2]){
+						//说明该房间中有玩家 已近发送了 投降 那么另一个人发的不做响应
+						index++;
+						break;
+					}
+					std::string ss = msg[index] + '\n';
+					write(ano_p.getFd(), ss.c_str(), ss.length());
+					r.mask[2] = true;
+
+					//TODO 加互斥
+					//投降了 删除该房间
+					rooms.remove(r);
+					//删除房间映射
+					delete_key(mp_fd_r, sockfd);
+					delete_key(mp_fd_r, ano_p.getFd());
+					//删除房间id
+					delete_key(mp_id_r, r.room_id);
+					index++;
+					break;
+				}
+				case(UNDO_YES):{
+
+					//直接转发给客户端
+					std::string ss = msg[index] + '\n';
+					write(ano_p.getFd(), ss.c_str(), ss.length());
+					//请求已被处理
+					r.mask[0] = false;
+					index++;
+					break;
+				}
+				case(UNDO_NO):{
+
+					//直接转发给客户端
+					std::string ss = msg[index] + '\n';
+					write(ano_p.getFd(), ss.c_str(), ss.length());
+					r.mask[0] = false;
+					index++;
+					break;
+				}
+				case(TIE_YES):{
+
+					//直接转发给客户端
+					std::string ss = msg[index] + '\n';
+					write(ano_p.getFd(), ss.c_str(), ss.length());
+					r.mask[1] = false;
+
+					//游戏结束了 删除该房间
+					rooms.remove(r);
+					//删除房间映射
+					delete_key(mp_fd_r, sockfd);
+					delete_key(mp_fd_r, ano_p.getFd());
+					delete_key(mp_id_r, r.room_id);
+					index++;
+					break;
+				}
+				case(TIE_NO):{
+
+					//直接转发给客户端
+					std::string ss = msg[index] + '\n';
+					write(ano_p.getFd(), ss.c_str(), ss.length());
+					r.mask[1] = false;
+					index++;
+					break;
+				}
+				case(SETPIECE):{
+					std::string ss = msg[index] + '\n' + msg[index + 1] + '\n' + msg[index + 2] + '\n' + msg[index + 3] + '\n';
+					write(ano_p.getFd(), ss.c_str(), ss.length());
+					index += 4;
+					break;
+				}
+				case(MSG):{
+
+					//这些类型的数据 直接转发给客户端
+					std::string ss = msg[index] + '\n' + msg[index + 1] + '\n';
+					write(ano_p.getFd(), ss.c_str(), ss.length());
+					index += 2;
+					break;
+				}
+				case(GAMEOVER):{
+					//这些类型的数据 直接转发给客户端
+					//TODO
 //				std::cout << "GAMEOVER\n";
-				write(ano_p.getFd(), buf, cnt);
-				//游戏结束了 删除该房间
-				rooms.remove(r);
-				//删除房间映射
-				delete_key(mp_fd_r, sockfd);
-				delete_key(mp_fd_r, ano_p.getFd());
-				delete_key(mp_id_r, r.room_id);
-				break;
-			}
-			case(CREATE_ROOM):{
-				std::cout << "create room\n";
-				//注册玩家
-				p.setFd(sockfd);
-				p.setNickname(msg[1]);
-				players.push_back(p);
-				//添加 映射
-				mp_fd_p[sockfd] = p;
-				//创建房间  暂时还没有另外一个玩家在房间 我们先把他创建着 令 fd = -1 方便 后面检查
-				r.setP1(p);
-				player ano_p;
-				ano_p.setFd(-1);
-				ano_p.setNickname("");
-				r.setP2(ano_p);
-				r.setRoomId(std::to_string(room_id++));
-				//先不添加房间 等另外玩家加入 在添加
-//				rooms.push_back(r);
-				//添加房间 映射
-				mp_fd_r[sockfd] = r;
-				mp_id_r[r.getRoomId()] = r;
-				std::string s = std::to_string(CREATE_ROOM_SUCCESS) + '\n' + r.getRoomId() + '\n';
-//				std::cout << s;
-				write(sockfd, s.c_str(), s.length());
-				break;
-			}
-			case(JOIN_ROOM):{
-				std::cout << "join room\n";
-				if(mp_id_r.count(msg[1]) == 0){
-					//说明房间号不存在
-					std::string s = std::to_string(JOIN_ROOM_FAIL) + '\n';
-					write(sockfd, s.c_str(), s.length());
+					//TODO
+					std::string ss = msg[index] + '\n' + msg[index + 1]; + '\n';
+					write(ano_p.getFd(), ss.c_str(), cnt);
+					//游戏结束了 删除该房间
+					rooms.remove(r);
+					//删除房间映射
+					delete_key(mp_fd_r, sockfd);
+					delete_key(mp_fd_r, ano_p.getFd());
+					delete_key(mp_id_r, r.room_id);
+					index += 2;
 					break;
 				}
-				//获取 room
-				r = mp_id_r[msg[1]];
-				//填充room
-				if(r.p2.getFd() == -1){
-					r.p2.setFd(sockfd);
-					r.p2.setNickname(msg[2]);
-					players.push_back(r.p2);
-
-					mp_fd_p[sockfd] = r.p2;
-					rooms.push_back(r);
-
-					//重新映射
+				case(CREATE_ROOM):{
+					std::cout << "create room\n";
+					//注册玩家
+					p.setFd(sockfd);
+					p.setNickname(msg[index + 1]);
+					players.push_back(p);
+					//添加 映射
+					mp_fd_p[sockfd] = p;
+					//创建房间  暂时还没有另外一个玩家在房间 我们先把他创建着 令 fd = -1 方便 后面检查
+					r.setP1(p);
+					player ano_p;
+					ano_p.setFd(-1);
+					ano_p.setNickname("");
+					r.setP2(ano_p);
+					r.setRoomId(std::to_string(room_id++));
+					//先不添加房间 等另外玩家加入 在添加
+//				rooms.push_back(r);
+					//添加房间 映射
 					mp_fd_r[sockfd] = r;
-					mp_fd_r[r.p1.getFd()] = r;
-
+					mp_id_r[r.getRoomId()] = r;
+					std::string s = std::to_string(CREATE_ROOM_SUCCESS) + '\n' + r.getRoomId() + '\n';
+//				std::cout << s;
+					write(sockfd, s.c_str(), s.length());
+					index += 2;
+					break;
 				}
-				std::string s = std::to_string(CONNECT_SUCCESS) + '\n' + r.p2.getNickname() + '\n' + std::to_string(BLACK_PIECE) + '\n' + r.getRoomId() +'\n';
-				write(r.p1.getFd(), s.c_str(), s.length());
-				s.clear();
-				s = std::to_string(CONNECT_SUCCESS) + '\n' + r.p1.getNickname() + '\n' + std::to_string(WHITE_PIECE) + '\n'+ r.getRoomId() +'\n';
-				write(r.p2.getFd(), s.c_str(), s.length());
+				case(JOIN_ROOM):{
+					std::cout << "join room\n";
+					if(mp_id_r.count(msg[index + 1]) == 0){
+						//说明房间号不存在
+						std::string s = std::to_string(JOIN_ROOM_FAIL) + '\n';
+						write(sockfd, s.c_str(), s.length());
+						index += 3;
+						break;
+					}
+					//获取 room
+					r = mp_id_r[msg[index + 1]];
+					//填充room
+					if(r.p2.getFd() == -1){
+						r.p2.setFd(sockfd);
+						r.p2.setNickname(msg[index + 2]);
+						players.push_back(r.p2);
+
+						mp_fd_p[sockfd] = r.p2;
+						rooms.push_back(r);
+
+						//重新映射
+						mp_fd_r[sockfd] = r;
+						mp_fd_r[r.p1.getFd()] = r;
+
+					}
+					std::string s = std::to_string(CONNECT_SUCCESS) + '\n' + r.p2.getNickname() + '\n' + std::to_string(BLACK_PIECE) + '\n' + r.getRoomId() +'\n';
+					write(r.p1.getFd(), s.c_str(), s.length());
+					s.clear();
+					s = std::to_string(CONNECT_SUCCESS) + '\n' + r.p1.getNickname() + '\n' + std::to_string(WHITE_PIECE) + '\n'+ r.getRoomId() +'\n';
+					write(r.p2.getFd(), s.c_str(), s.length());
+					index += 3;
+				}
 			}
 		}
+
 		//将监听的fd重新注册监听时间 应为设置了 EPOLLONESHOT
 		epoll_event e;
 		e.data.fd = sockfd;
