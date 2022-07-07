@@ -28,7 +28,7 @@ void Net::disconnect(){
 void Net::send(QString s){
     this->socket.waitForBytesWritten();
     this->socket.write(s.toStdString().c_str(),strlen(s.toStdString().c_str()));
-
+//    this->socket.flush();
 }
 QString Net::read(){
     return QString(this->socket.readAll());

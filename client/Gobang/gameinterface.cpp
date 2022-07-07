@@ -462,6 +462,8 @@ void GameInterface::readReady(){
     QString s = n->read();
     qDebug() << s;
     QStringList list = s.split('\n');
+    for(int i = 0; i < list.size(); i++) qDebug() << list[i] << " ";
+    qDebug() << "\n";
     int code = list[0].toInt();
     switch(code){
         case CONNECT_SUCCESS:{
