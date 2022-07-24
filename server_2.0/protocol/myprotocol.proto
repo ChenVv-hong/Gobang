@@ -1,0 +1,318 @@
+syntax = "proto3";
+
+/**
+    在 Protobuf 3 中，更进一步，直接去掉了 required 和 optional 修饰符，
+    所有字段都是 optional 的， 
+    而且对于原始数据类型字段，
+    压根不提供 hasXxx() 方法。
+*/
+
+package GoBang;
+
+enum TYPE{
+    //登陆相关
+    LOGIN = 0;
+    //注册相关
+    REGISTER = 1;
+    //请求排名相关
+    RANK_LIST = 2;
+    
+    //普通匹配
+    NORMAL_MATCH = 3;
+    //排位匹配
+    RANK_MATCH = 4;
+
+    //创建房间相关
+    CREATE_ROOM = 5;
+    //加入房间相关
+    JOIN_ROOM = 6;
+
+    //落子相关
+    SET_PIECE = 7;
+
+    //悔棋相关
+    UNDO = 8;
+    //落子相关
+    TIE = 9;
+    //认输相关
+    SURRENDER = 10;
+    //局内消息相关
+    MSG = 11;
+
+    //请求继续游戏 即 不换房间继续和该玩家对战
+    CONTINUE_GAME = 12;
+
+    //退出当前房间
+    QUIT_ROOM = 13;
+
+    //游戏开始
+    GAMESTART = 15;
+
+    //游戏结束
+    GAMEOVER = 14;
+
+}
+
+
+//LOGIN
+message LoginRequest{
+    string name = 1;    //用户名
+    string passwd = 2;  //密码
+}
+
+
+message LoginResponse{
+    bool success = 1;   //是否成功
+    string msg = 2;     //消息
+    //自己知道自己的用户名 就不回传了
+    string uid = 3;     //成功的话 会有uid
+    int32 points = 4;   //成功的话 积分
+}
+
+//REGISTER
+message RegisterRequest{
+    string name = 1;    //用户名
+    string passwd = 2;  //密码
+}
+
+message RegisterResponse{
+    bool success = 1; //是否成功
+    string msg = 2;     //消息
+}
+
+//RANK_LIST 建议进行分页查询
+//start 表示从第几名开始   cnt表示查询多少个 最大查询20个
+message RankListRequest{
+    int32 start = 1;
+    int32 cnt = 2;
+}
+
+//描述每位用户
+message Player{
+    string uid = 1;     //用户id
+    string name = 2;    //用户名
+    int32 points = 3;   //用户积分
+}
+
+message RankListResponse{
+    bool success = 1;       //是否成功
+    string msg = 2;         //消息
+    repeated Player list = 3;   //请求的列表
+}
+
+
+//匹配
+//NORMAL_MATCH
+message NormalMatchRequest{
+    string uid = 1;     //用户id
+}
+
+
+message NormalMatchResponse{
+    bool success = 1;   //是否成功
+    string msg = 2;     //消息
+    string rid = 3;     //房间号
+}
+
+//RANK_MATCH
+message RankMatchRequest{
+    string uid = 1;     //用户id
+}
+
+message RankMatchResponse{
+    bool success = 1;   //是否成功
+    string msg = 2;     //消息
+    string rid = 3;     //房间号
+}
+
+//CREATE_ROOM
+message CreateRoomRequest{
+    string uid = 1;     //用户id
+}
+
+message CreateRoomResponse{
+    bool success = 1;
+    string msg = 2;     //消息
+    string rid = 3;     //房间id
+}
+
+//JOIN_ROOM
+message JoinRoomRequest{
+    //哪个用户加入了哪个房间
+    string uid = 1;     //用户id
+    string rid = 2;     //房间id
+}
+
+//一位玩家加入后 响应同时发给该玩家是否成功
+message JoinRoomResponse{
+    bool success = 1;
+    string msg = 2;     //消息
+    string rid = 3;     //房间号
+}
+
+//SET_PIECE
+//描述棋子
+//颜色
+enum PieceColor{
+    NO_PIECE = 0;
+    BLACK = 2;
+    WHITE = 3;
+}
+//棋子
+message Piece{
+    int32 x = 1;
+    int32 y = 2;
+    PieceColor color = 3;
+}
+
+//描述棋盘
+/*
+    每两个bit位表示棋盘一个点 一个int64 可以表示棋盘的32个点 即两行
+    00 空
+    10 黑 即2
+    11 白 即3
+*/
+message Border{
+    sfixed64 row_2 = 1;
+    sfixed64 row_4 = 2;
+    sfixed64 row_6 = 3;
+    sfixed64 row_8 = 4;
+    sfixed64 row_10 = 5;
+    sfixed64 row_12 = 6;
+    sfixed64 row_14 = 7;
+    sfixed64 row_16 = 8;
+}
+
+message SetPieceRequest{
+    Piece p = 1;
+}
+
+//同步棋盘状态
+message SetPieceResponse{
+    bool success = 1;
+    PieceColor next = 4; //下一个落子的应该是什么颜色
+    string msg = 2;
+    Border b = 3;
+}
+
+
+//UNDO
+message UndoRequest{
+    string uid = 1;
+}
+
+message UndoResponse{
+    bool success = 1;
+}
+
+//TIE
+message TieRequest{
+    string uid = 1;
+}
+
+message TieResponse{
+    bool success = 1;
+}
+
+//SURRENDER
+message SurrenderRequest{
+    string uid = 1;
+}
+
+//消息
+message Messg{
+    string name = 1;
+    string msg = 2;
+}
+
+//Continue_Game 不退出当前房间
+message ContinueGameRequest{
+    string uid = 1;
+}
+
+message ContinueGameResponse{
+
+}
+
+//退出当前房间
+message QuitRoomRequest{
+    string uid = 1;
+}
+
+message QuitRoomResponse{
+    string uid = 1;     //退出房间的用户id
+}
+//游戏开始
+message GameStart{
+    PieceColor myColor = 1;         
+    PieceColor competitorColor = 2;
+    string competitorName = 3;
+    string competitorID = 4;
+    string rid = 5;
+
+}
+    
+//游戏结束
+message GameOver{
+    bool isWin = 1;  //游戏结束 是否胜利
+    string winUid = 2;
+}
+
+
+//两个主要大类
+/*
+    客户端可能发出的请求，即服务端可能收到的
+*/
+message goBangRequest{
+    TYPE type = 1;
+    oneof request{
+        LoginRequest loginReq = 2;
+        RegisterRequest RegisterReq = 3;
+        RankListRequest rankListReq = 4;
+        CreateRoomRequest createRoomReq = 5;
+        SetPieceRequest setPieceReq = 6;
+
+        //UNDO 和 TIE 直接做转发处理
+        UndoRequest undoReq = 7;
+        UndoResponse undoResp = 15;
+        TieRequest tieReq = 8;
+        TieResponse tieResp = 14;
+
+        SurrenderRequest surrenderReq = 9;
+        Messg messg = 10;
+        ContinueGameRequest continueGameReq = 11;
+        QuitRoomRequest quitRoomReq = 12;
+        NormalMatchRequest normalMatchReq = 13;
+        RankMatchRequest rankMatchReq = 16;
+    }
+}
+
+/*
+    客户端可能收到响应，即服务端可能发出的
+*/
+message goBangResponse{
+    TYPE type = 1;
+    oneof response{
+        LoginResponse loginResp = 2;
+        RegisterResponse registerResp = 3;
+        RankListResponse rankListResp = 4;
+        CreateRoomResponse createRoomResp = 5;
+        SetPieceResponse setPieceResp = 6;
+
+        //UNDO 和 TIE 直接做转发处理
+        UndoResponse undoResponse = 7;
+        TieResponse tieResp = 8;
+        UndoRequest undoReq = 17;
+        UndoResponse undoResp = 18;
+
+        Messg messg = 10;
+        ContinueGameResponse continueGameResp = 11;
+        QuitRoomResponse quitRoomResp = 12;
+
+        GameStart gameStart = 13;
+        GameOver gameOver = 14;
+
+        NormalMatchResponse normalMatchResp = 15;
+        RankMatchResponse rankMatchResp = 16;
+    }
+}
