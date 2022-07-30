@@ -5,8 +5,9 @@
 #ifndef MYWEBSERVER_TIMER_H
 #define MYWEBSERVER_TIMER_H
 #include <time.h>
+#include <string>
 
-#define TIMESLOT 5
+#define TIMESLOT 10
 class timer;
 struct client_data{
 	int sock_fd;
@@ -16,8 +17,9 @@ struct client_data{
 
 struct timer{
 	time_t expire;
-	void (*cb_func)(client_data *);
-	client_data *user_data = nullptr;
+	void (*cb_func)(int fd, std::string uid);
+	int fd;
+	std::string uid;
 	timer *next = nullptr;
 	timer *prev = nullptr;
 };
