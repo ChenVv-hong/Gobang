@@ -11,23 +11,39 @@ std::unordered_map<std::string, room *> onlineRooms;              //在线房间
 std::unordered_map<std::string, GoBang::Player*> onlinePlayers;  //在线玩家  uid->player、
 std::unordered_map<std::string, GoBang::Player*> reconnectPlayers;   //等待重连玩家
 std::unordered_map<std::string, room *> playerRoom;        //玩家所在房间    房间为nullptr表示还未进入房间
-std::queue<std::string> normalMatch;    //快速开始 匹配队列
-std::queue<std::string> rankMatch[5];   //排位 匹配队列 0 ～ 500 500 ～ 1000 1000 ～ 1500 1500 ～ 2000 2000 ～ ...
+std::unordered_map<std::string, int>    uidFd;  //玩家对应的fd
+
+std::deque<std::string> normalMatch;    //快速开始 匹配队列
+std::deque<std::string> rankMatch[5];   //排位 匹配队列 0 ～ 500 500 ～ 1000 1000 ～ 1500 1500 ～ 2000 2000 ～ ...
+pthread_mutex_t mutex;
+
 std::string allFd[MAX_CLIENT];      //fd -> uid 当前socket连接中对应的玩家
+
 sort_time_list timeList;        //定时器链表
-std::unordered_map<std::string, timer *> playerTimer;   //玩家身上的定时器
+std::unordered_map<std::string, timer *> playerTimer;   //玩家身上的定时器 用于处理长时间 不进行游戏 或者 断线超时
+timer* fdTimer[MAX_CLIENT];      //fd上的定时器 用于处理长时间不登陆或注册
+
 thread_pool *threadPool;        //线程池
 connection_pool *connectionPool;    //数据库连接池
 
+
+
 //TODO 匹配超时
+//TODO BUG 两边都 断线重连超时
 
 int main() {
+	GOOGLE_PROTOBUF_VERIFY_VERSION;
 	myUtils::printMsg();
 	//线程池
 	threadPool = new thread_pool(20,20, 10000, false);
 	threadPool->print_msg();
+
 	//数据库连接池
 	connectionPool = connection_pool::GetInstance();
+	connectionPool->init("localhost","root", "ChenJiaHong123!!", "GoBangServer",  3306, 10);
+	//互斥量 初始化
+	pthread_mutex_init(&mutex, nullptr);
+
 	int ret;
 	initNet();
 	//最大事件
@@ -37,6 +53,7 @@ int main() {
 	bool timeout = false;
 	while(running){
 		int ready = epoll_wait(ep_fd, events, MAX_CLIENT, -1);
+		std:: cout << ready << "  " << errno << '\n';
 		if(ready == -1 && errno != EINTR) myUtils::print_sys_error("epoll_wait error");
 		for(int i = 0; i < ready; i++){
 			int cfd = events[i].data.fd;
@@ -74,10 +91,12 @@ int main() {
 						switch (signals[j]) {
 							case SIGALRM:{
 								timeout = true;
+								std::cout << "SIGALRM 信号触发\n";
 								break;
 							}
 							case SIGTERM:{
 								running = false;
+								std::cout << "SIGTERM 信号触发\n";
 								break;
 							}
 						}
@@ -87,11 +106,45 @@ int main() {
 			else{
 				if(events[i].events & EPOLLRDHUP){
 					//对方关闭连接
-					//TODO 断开连接并且存在游戏对局 添加定时器
+					//断开连接并且存在游戏对局 添加定时器
+					std::string uid = allFd[cfd];
+					if(uid == "#"){
+						//玩家进行了连接就断开了 还没登陆
+						std::cout << "玩家进行了连接就断开了\n";
+						timeList.delTimer(fdTimer[cfd]);
+						continue;
+					}
+					pthread_mutex_lock(&mutex);
+					allFd[cfd] = "#";
+					uidFd.erase(uid);
+					if(playerRoom.count(uid) == 0 || playerRoom[uid] == nullptr || playerRoom[uid]->gameState == false){
+						pthread_mutex_unlock(&mutex);
+						//玩家不在房间中 或者 在房间中但是不在游戏中 断开连接，删除玩家在服务器上的所有资源
+						std::cout << "玩家不在房间中 或者 在房间中但是不在游戏中 断开连接，删除玩家在服务器上的所有资源\n";
+						quitGame(-1, uid);
+					}
+					else{
+						//玩家在房间中并且正在游戏中 断开连接， 等待他断线重联
+						//将他移入 重连玩家
+						std::cout << "玩家在房间中并且正在游戏中 断开连接， 等待他断线重联\n";
+						GoBang::Player *p = onlinePlayers[uid];
+						onlinePlayers[uid] = nullptr;
+						onlinePlayers.erase(uid);
+						reconnectPlayers[uid] = p;
+
+						//添加重连超时的定时器
+						addTimeTask(-1, uid, 60, 1);
+						pthread_mutex_unlock(&mutex);
+					}
 				}
 				else if(events[i].events & EPOLLIN){
+					//Reactor模式 主线程 只进行监听读写时间  读写操作和逻辑内容 交给 工作线程
 					//可读事件
-					//TODO
+					task t;
+					t.func = workThread;
+					int *fd = new int(cfd);
+					t.arg = (void *)fd;
+					threadPool->add_task(t);
 				}
 				else if(events[i].events & EPOLLOUT){
 					//可写事件
@@ -105,10 +158,15 @@ int main() {
 		}
 		//如果超时了 处理超时事件
 		if(timeout){
-			//TODO
+			timeList.tick();
+			alarm(TIMESLOT);
+			timeout = false;
+			printServerMsg();
 		}
 	}
 	close();
+	google::protobuf::ShutdownProtobufLibrary();
+	std::cout << "结束\n";
 	return 0;
 }
 
@@ -137,7 +195,7 @@ void initNet(){
 	event.events = EPOLLIN;
 	epoll_ctl(ep_fd, EPOLL_CTL_ADD, lfd, &event);
 
-	//TODO 定时内容
+	//定时内容
 	ret = socketpair(PF_UNIX, SOCK_STREAM, 0, pipefd);
 	if(ret == -1) myUtils::print_sys_error("socketpair error");
 	myUtils::setNonBlock(pipefd[1]);
@@ -155,15 +213,18 @@ void initConnection(int cfd){
 	allFd[cfd] = "#";
 	//加入监听红黑树中
 	myUtils::fdAdd(ep_fd, cfd, true);
+
 	//用户和服务器进行tcp连接 设置定时 如果长时间 不发送消息 即登陆请求 自动断开连接
-	addTimeTask(cfd, "#",300);
+	pthread_mutex_lock(&mutex);
+	addTimeTask(cfd, "#", 5 * 60, 0);
+	pthread_mutex_unlock(&mutex);
 }
 
 
 void sigHandle(int sig){
 	int save_errno = errno;
 	int msg = sig;
-	send(pipefd[1], (char *)msg, 1, 0);
+	send(pipefd[1], (char *)&msg, 1, 0);
 	errno = save_errno;
 }
 
@@ -178,37 +239,1560 @@ void addSig(int sig){
 	assert(sigaction(sig, &sa, nullptr) != -1);
 }
 
-void addTimeTask(int cfd, std::string uid,int timeslot){
+void addTimeTask(int cfd, const std::string& uid, int timeslot, int option){
 	timer *t = new timer();
 	t->expire = time(nullptr) + timeslot;
 	t->cb_func = cbFunc;
 	t->fd = cfd;
-	t->uid = std::move(uid);
+	t->uid = uid;
+	if(option == 0) fdTimer[cfd] = t;
+	else if(option == 1) playerTimer[uid] = t;
 	//向定时器链表 添加定时器
 	timeList.addTimer(t);
 }
 
 void close(){
 	threadPool->close();
+	delete threadPool;
 	connectionPool->DestroyPool();
+	pthread_mutex_destroy(&mutex);
+	close(lfd);
+	close(pipefd[0]);
+	close(pipefd[1]);
 }
 
 void cbFunc(int fd, std::string uid){
+
 	if(uid == "#"){
 		//已连接 但长时间未登陆 或 未注册
+		std::cout << "已连接 但长时间未登陆 或 未注册\n";
+		quitGame(fd, uid);
+		fdTimer[fd] = nullptr;
 	}
 	else if(fd == -1){
 		//断线超时
+		std::cout << "断线超时\n";
+		quitGame(fd, uid);
+
+		pthread_mutex_lock(&mutex);
+		playerTimer[uid] = nullptr;
+		pthread_mutex_unlock(&mutex);
 	}
 	else{
 		//长时间不进行游戏
+		std::cout << "长时间不进行游戏\n";
+		quitGame(fd, uid);
+
+		pthread_mutex_lock(&mutex);
+		playerTimer[uid] = nullptr;
+		pthread_mutex_unlock(&mutex);
 	}
+
 }
 
-void quitGame(int fd, std::string uid){
-	//TODO 退出服务器相关
+void quitGame(int fd, const std::string &uid){
+	//退出服务器相关
+	//将内存中的数据写到数据库
+	UserDao userDao;
+	std::string name;
+	//删除玩家资源
+	pthread_mutex_lock(&mutex);
+	if(onlinePlayers.count(uid) != 0 && onlinePlayers[uid] != nullptr) {
+		//玩家为 在线玩家
+		name = onlinePlayers[uid]->name();
+		userDao.updateUser(connectionPool, uid, onlinePlayers[uid]->points());
+		delete onlinePlayers[uid];
+		onlinePlayers.erase(uid);
+	}
+
+	if(reconnectPlayers.count(uid) != 0 && reconnectPlayers[uid] != nullptr){
+		//玩家为 断线重连玩家
+		//重连超时 直接判输 另外一位玩家胜
+		int anotherFd = playerRoom[uid]->getAnotherPlayerFd(uid);
+
+		GoBang::GoBangResponse goBangResponse;
+		goBangResponse.set_type(GoBang::GAMEOVER);
+		GoBang::GameOver *gameOver = goBangResponse.mutable_gameover();
+		gameOver->set_iswin(true);
+		gameOver->set_winuid(allFd[anotherFd]);
+		gameOver->set_msg("对方退出房间！");
+
+		//序列化
+		std::string res = goBangResponse.SerializeAsString();
+		int length = res.length();
+		int *ptr = &length;
+
+		char sendBuff[1024];
+		memset(sendBuff, 0, sizeof (sendBuff));
+		memcpy(sendBuff, ptr, sizeof (int));
+		sprintf(sendBuff + 4,"%s", res.c_str());
+		//发送
+		send(anotherFd, sendBuff, 4 + res.length(), 0);
+
+
+		//更新数据
+		int points = reconnectPlayers[uid]->points();
+		reconnectPlayers[uid]->set_points(points - 10);
+		points = onlinePlayers[allFd[anotherFd]]->points();
+		onlinePlayers[allFd[anotherFd]]->set_points(points + 10);
+
+		playerRoom[uid]->gameState = false;
+
+	}
+
+	//删除房间资源 playerRoom 和 onlineRoom
+	std::string rid = "#";
+	if(playerRoom.count(uid) != 0 && playerRoom[uid] != nullptr){
+		//玩家在房间中
+		rid = playerRoom[uid]->roomId;
+		playerRoom[uid] = nullptr;
+		playerRoom.erase(uid);
+	}
+
+	if(rid != "#" && uid != "#"){
+		//玩家所在房间 那么退出房间
+		int cnt = onlineRooms[rid]->playerQuitRoom(uid);
+		if(cnt == 0){
+			//全部退出房间了 销毁房间资源
+			delete onlineRooms[rid];
+			onlineRooms.erase(rid);
+		}
+		else{
+			int anotherFd = onlineRooms[rid]->getAnotherPlayerFd(uid);
+			//给另外一位玩家发送对方退出房间的消息
+			GoBang::GoBangResponse goBangResponse;
+			goBangResponse.set_type(GoBang::QUIT_ROOM);
+			GoBang::QuitRoomResponse *quitRoomResponse = goBangResponse.mutable_quitroomresp();
+			quitRoomResponse->set_uid(uid);
+			quitRoomResponse->set_name(name);
+
+			//序列化
+			std::string res = goBangResponse.SerializeAsString();
+			int length = res.length();
+			int *ptr = &length;
+
+			char sendBuff[4 + length];
+			memset(sendBuff, 0, sizeof (sendBuff));
+			memcpy(sendBuff, ptr, sizeof (int));
+			sprintf(sendBuff + 4,"%s", res.c_str());
+			//发送
+			send(anotherFd, sendBuff, 4 + res.length(), 0);
+		}
+	}
+
 	if(fd != -1){
 		//还没有断开连接 最后断开连接
+		allFd[fd] = "#";
+		uidFd.erase(uid);
 		close(fd);
 	}
+	pthread_mutex_unlock(&mutex);
+}
+
+
+void printServerMsg(){
+	pthread_mutex_lock(&mutex);
+	std::cout << "在线玩家：\n";
+	std::cout << "uid\tname\n";
+	for(auto it : onlinePlayers){
+		std::cout << it.second->uid() << "\t" << it.second->name() << '\n';
+	}
+
+	std::cout << "在线房间：\n";
+	std::cout << "rid\tgamestate\n";
+	for(auto it : onlineRooms){
+		std::cout << it.second->roomId << "\t" << it.second->gameState << '\n';
+	}
+
+	std::cout << "等待连接的玩家：\n";
+	std::cout << "uid\tname\n";
+	for(auto it : reconnectPlayers){
+		std::cout << it.second->uid() << "\t" << it.second->name() << '\n';
+	}
+
+	std::cout << "玩家所在房间：\n";
+	std::cout << "uid\tnrid\t gamestat\n";
+	for(auto it :playerRoom){
+		std::cout << it.first << "\t";
+		if(it.second == nullptr){
+			std::cout << it.second->roomId << "\t" << it.second->gameState << '\n';
+		}
+		else std::cout << '\n';
+
+	}
+
+	pthread_mutex_unlock(&mutex);
+}
+
+void* workThread(void *arg){
+	int fd = *(int *)arg;
+	delete((int *)arg);
+	std::cout << fd << " 处理任务\n";
+	std::vector<std::string> message;
+	char buff[2048];
+	int readIdx = 0;
+	int checkIdx = 0;
+	int needRead = 0;
+	int Length = 0;
+	int *ptr_r = &Length;
+	//读取tcp字节流
+	do{
+		int ret = recv(fd, buff + readIdx, 2048 - readIdx, 0);
+		if(ret == -1){
+			if(errno != EAGAIN){myUtils::print_sys_error("recv error");}
+		}
+		else{
+			readIdx += ret;
+			while(checkIdx < readIdx){
+				//不断读取 防止tcp沾包
+				if(readIdx - checkIdx >= 4){
+					memcpy(ptr_r, buff, sizeof (int));
+					checkIdx += 4;
+					if(checkIdx + Length <= readIdx){
+						//数据都被读到 那么截取数据
+						char m[Length + 1];
+						memset(m, 0, sizeof (m));
+						memcpy(m, buff + checkIdx, Length);
+						message.emplace_back(std::string(m));
+						checkIdx += Length;
+					}
+					else{
+						//没有读到完整数据 将已近处理的数据从缓冲区中删除 并将不完整的数据移动到开头
+						int i, j;
+						for(i = 0, j = checkIdx - 4; j < readIdx; i++, j++){
+							//将缓冲区的数据向前移动
+							buff[i] = buff[j];
+						}
+						//重新调整readIdx和checkIdx的位置
+						readIdx = i;
+						checkIdx = 0;
+						break;
+					}
+				}
+				else{
+					//继续读
+					break;
+				}
+			}
+
+		}
+	}while(checkIdx < readIdx);
+
+	GoBang::GoBangRequest goBangRequest;
+	//执行消息请求
+	for(int i = 0; i < message.size(); i++){
+		bool ret = goBangRequest.ParseFromString(message[i]);
+		if(!ret){
+			std::cout << "protobuf error\n";
+		}
+		else{
+
+			GoBang::GoBangResponse goBangResponse;
+			switch (goBangRequest.type()) {
+
+				case(GoBang::PLAYER_MESSAGE):{
+					std::cout << fd << " " <<"PLAYER_MESSAGE\n";
+					//请求玩家信息
+					if(goBangRequest.has_playmessagereq()){
+						std::string uid = goBangRequest.playmessagereq().uid();
+						GoBang::PlayerMessageResponse *playerMessageResponse = goBangResponse.mutable_playmessageresp();
+
+						GoBang::Player *p = playerMessageResponse->mutable_p();
+
+						pthread_mutex_lock(&mutex);
+						if(onlinePlayers.count(uid) > 0){
+							p->set_uid(onlinePlayers[uid]->uid());
+							p->set_name(onlinePlayers[uid]->name());
+							p->set_points(onlinePlayers[uid]->points());
+						}
+						else{
+							p->set_uid("#");
+						}
+						pthread_mutex_unlock(&mutex);
+
+						//序列化
+						std::string r = goBangResponse.SerializeAsString();
+						int length = r.length();
+						int *ptr = &length;
+						char sendBuff[4 + r.length()];
+						memset(sendBuff, 0, sizeof (sendBuff));
+						memcpy(sendBuff, ptr, sizeof (int));
+						sprintf(sendBuff + 4,"%s", r.c_str());
+						//发送
+						send(fd,sendBuff,4 + r.length(),0);
+					}
+					break;
+				}
+
+				case(GoBang::LOGIN):{
+					std::cout << fd << " " <<"LOGIN\n";
+					//登陆
+					if(goBangRequest.has_loginreq()){
+						std::string username = goBangRequest.loginreq().name();
+						std::string passwd = goBangRequest.loginreq().passwd();
+						UserDao userDao;
+						bool success = false;
+						//查询是否存在用户
+						GoBang::Player p = userDao.queryOneUser(connectionPool, username, passwd, success);
+
+						goBangResponse.set_type(GoBang::LOGIN);
+						if(success){
+							//存在用户
+							//自定义消息类型 通过以下赋值
+							GoBang::LoginResponse *loginResponse = goBangResponse.mutable_loginresp();
+
+							pthread_mutex_lock(&mutex);
+
+							if(onlinePlayers.count(p.uid()) == 0){
+								//登陆成功
+								loginResponse->set_success(true);
+								loginResponse->set_msg("登陆成功！");
+
+								if(reconnectPlayers.count(p.uid()) > 0){
+									//属于断线用户
+									loginResponse->set_isreconnect(true);
+									loginResponse->set_rid(playerRoom[p.uid()]->roomId);
+									delete reconnectPlayers[p.uid()];
+									reconnectPlayers.erase(p.uid());
+
+									//调整定时器 断线超时的定时器
+									timeList.delTimer(playerTimer[p.uid()]);
+									playerTimer[p.uid()] = nullptr;
+								}
+								else loginResponse->set_isreconnect(false);
+
+								//设置为在线用户
+								onlinePlayers[p.uid()] = new GoBang::Player(p);
+								allFd[fd] = p.uid();
+								uidFd[p.uid()] = fd;
+								//删除fd上的定时器
+								timeList.delTimer(fdTimer[fd]);
+								fdTimer[fd] = nullptr;
+								//设置长时间不进行游戏的定时器
+								addTimeTask(fd, p.uid(), 30 * 60, 1);
+								pthread_mutex_unlock(&mutex);
+							}
+							else {
+								pthread_mutex_unlock(&mutex);
+								//登陆失败
+								loginResponse->set_success(true);
+								loginResponse->set_msg("登陆失败！该用户已在线");
+							}
+
+							loginResponse->set_uid(p.uid());
+							loginResponse->set_points(p.points());
+							
+						}
+						else{
+							//不存在用户 登陆失败
+							GoBang::LoginResponse *loginResponse = goBangResponse.mutable_loginresp();
+							loginResponse->set_success(false);
+							loginResponse->set_msg("登陆失败！用户名或密码错误");
+
+							//调整定时器
+							pthread_mutex_lock(&mutex);
+							fdTimer[fd]->expire = time(nullptr) + 5 * 60;
+							timeList.adjustTimer(fdTimer[fd]);
+							pthread_mutex_unlock(&mutex);
+
+						}
+
+						//序列化
+						std::string r = goBangResponse.SerializeAsString();
+						int length = r.length();
+						int *ptr = &length;
+						char sendBuff[4 + r.length()];
+						memset(sendBuff, 0, sizeof (sendBuff));
+						memcpy(sendBuff, ptr, sizeof (int));
+						sprintf(sendBuff + 4,"%s", r.c_str());
+						//发送
+						send(fd,sendBuff,4 + r.length(),0);
+					}
+					break;
+				}
+
+				case GoBang::REGISTER:{
+					std::cout << fd << " " << "REGISTER\n";
+					//注册
+					if(goBangRequest.has_registerreq()){
+						//获取发送数据
+						std::string username = goBangRequest.registerreq().name();
+						std::string passwd = goBangRequest.registerreq().passwd();
+						UserDao userDao;
+
+						//设置回传数据
+						goBangResponse.set_type(GoBang::REGISTER);
+						if(userDao.insertUser(connectionPool, username, passwd)){
+							//注册成功
+							GoBang::RegisterResponse *registerResponse = goBangResponse.mutable_registerresp();
+							registerResponse->set_success(true);
+							registerResponse->set_msg("注册成功！");
+						}
+						else{
+							//注册失败
+							GoBang::RegisterResponse *registerResponse = goBangResponse.mutable_registerresp();
+							registerResponse->set_success(false);
+							registerResponse->set_msg("注册失败！");
+						}
+
+						//序列化
+						std::string r = goBangResponse.SerializeAsString();
+						int length = r.length();
+						int *ptr = &length;
+						char sendBuff[4 + r.length()];
+						memset(sendBuff, 0, sizeof (sendBuff));
+						memcpy(sendBuff, ptr, sizeof (int));
+						sprintf(sendBuff + 4,"%s", r.c_str());
+						//发送
+						send(fd,sendBuff,4 + r.length(),0);
+
+						//调整定时器
+						pthread_mutex_lock(&mutex);
+						fdTimer[fd]->expire = time(nullptr) + 5 * 60;
+						timeList.adjustTimer(fdTimer[fd]);
+						pthread_mutex_unlock(&mutex);
+
+					}
+					break;
+				}
+
+				case GoBang::RANK_LIST:{
+					std::cout << fd << " " << "RANK_LIST\n";
+					if(goBangRequest.has_ranklistreq()){
+						int32_t start = goBangRequest.ranklistreq().start();
+						int32_t count = goBangRequest.ranklistreq().cnt();
+
+						//设置回传数据
+						UserDao userDao;
+						goBangResponse.set_type(GoBang::RANK_LIST);
+						std::vector<GoBang::Player> temp = userDao.querySomeUser(connectionPool, count, start);
+						for(int j = 0; j < temp.size(); j++){
+							GoBang::RankListResponse *rankListResponse = goBangResponse.mutable_ranklistresp();
+							rankListResponse->set_success(true);
+							rankListResponse->set_msg("");
+							//添加repeated元素
+							GoBang::Player *p = rankListResponse->add_list();
+							p->set_uid(temp[j].uid());
+							p->set_name(temp[j].name());
+							p->set_points(temp[j].points());
+						}
+
+						//序列化
+						std::string r = goBangResponse.SerializeAsString();
+						int length = r.length();
+						int *ptr = &length;
+						char sendBuff[4 + r.length()];
+						memset(sendBuff, 0, sizeof (sendBuff));
+						memcpy(sendBuff, ptr, sizeof (int));
+						sprintf(sendBuff + 4,"%s", r.c_str());
+						//发送
+						send(fd,sendBuff,4 + r.length(),0);
+					}
+					break;
+				}
+
+				case GoBang::NORMAL_MATCH:{
+					std::cout << fd << " " << "NORMAL_MATCH\n";
+					if(goBangRequest.has_normalmatchreq()){
+						std::string uid = goBangRequest.normalmatchreq().uid();
+
+						pthread_mutex_lock(&mutex);
+						normalMatch.push_back(uid);
+						pthread_mutex_unlock(&mutex);
+
+						task t;
+						t.arg = nullptr;
+						t.func = normalMatchThread;
+						threadPool->add_task(t);
+
+						pthread_mutex_lock(&mutex);
+						//删除长时间不进行游戏的定时器
+						timeList.delTimer(playerTimer[uid]);
+						playerTimer[uid] = nullptr;
+						pthread_mutex_unlock(&mutex);
+					}
+
+					break;
+				}
+
+				case GoBang::RANK_MATCH:{
+					std::cout << fd << " " << "RANK_MATCH\n";
+					if(goBangRequest.has_rankmatchreq()){
+						std::string uid = goBangRequest.rankmatchreq().uid();
+						//排位 匹配队列 0 ～ 500 500 ～ 1000 1000 ～ 1500 1500 ～ 2000 2000 ～ ...
+						pthread_mutex_lock(&mutex);
+						if(onlinePlayers[uid]->points() <= 500){
+							rankMatch[0].push_back(uid);
+							pthread_mutex_unlock(&mutex);
+							task t;
+							int *a = new int(0);
+							t.arg = (void *)a;
+							t.func = rankMatchThread;
+							threadPool->add_task(t);
+						}
+						else if(onlinePlayers[uid]->points() <= 1000){
+							rankMatch[1].push_back(uid);
+							pthread_mutex_unlock(&mutex);
+							task t;
+							int *a = new int(1);
+							t.arg = (void *)a;
+							t.func = rankMatchThread;
+							threadPool->add_task(t);
+						}
+						else if(onlinePlayers[uid]->points() <= 1500){
+							rankMatch[2].push_back(uid);
+							pthread_mutex_unlock(&mutex);
+							task t;
+							int *a = new int(2);
+							t.arg = (void *)a;
+							t.func = rankMatchThread;
+							threadPool->add_task(t);
+						}
+						else if(onlinePlayers[uid]->points() <= 200){
+							rankMatch[3].push_back(uid);
+							pthread_mutex_unlock(&mutex);
+							task t;
+							int *a = new int(3);
+							t.arg = (void *)a;
+							t.func = rankMatchThread;
+							threadPool->add_task(t);
+						}
+						else{
+							rankMatch[4].push_back(uid);
+							pthread_mutex_unlock(&mutex);
+							task t;
+							int *a = new int(4);
+							t.arg = (void *)a;
+							t.func = rankMatchThread;
+							threadPool->add_task(t);
+						}
+						pthread_mutex_lock(&mutex);
+						//删除长时间不进行游戏的定时器
+						timeList.delTimer(playerTimer[uid]);
+						playerTimer[uid] = nullptr;
+						pthread_mutex_unlock(&mutex);
+					}
+
+					break;
+				}
+
+				case GoBang::CREATE_ROOM:{
+					std::cout << fd << " " << "CREATE_ROOM\n";
+					if(goBangRequest.has_createroomreq()){
+						std::string uid = goBangRequest.createroomreq().uid();
+						//获取房间号
+						pthread_mutex_lock(&mutex);
+
+						std::string rid = std::to_string(roomId);
+						roomId++;
+
+						//创建房间
+						room *rm = new room(rid);
+						onlineRooms[rid] = rm;
+
+						//将该玩家加入房间
+						rm->addPlayer(fd, *onlinePlayers[uid], GoBang::BLACK);
+						playerRoom[uid] = rm;
+
+						//设置回传数据
+						goBangResponse.set_type(GoBang::CREATE_ROOM);
+						GoBang::CreateRoomResponse *createRoomResponse = goBangResponse.mutable_createroomresp();
+						createRoomResponse->set_success(true);
+						createRoomResponse->set_rid(rm->roomId);
+						createRoomResponse->set_msg("创建成功！");
+
+						pthread_mutex_unlock(&mutex);
+
+						//序列化
+						std::string r = goBangResponse.SerializeAsString();
+						int length = r.length();
+
+						int *ptr = &length;
+						char sendBuff[4 + r.length()];
+						memset(sendBuff, 0, sizeof (sendBuff));
+						memcpy(sendBuff, ptr, sizeof (int));
+						sprintf(sendBuff + 4,"%s", r.c_str());
+						//发送
+						send(fd,sendBuff,4 + r.length(),0);
+
+						pthread_mutex_lock(&mutex);
+						//调整定时器
+						timeList.delTimer(playerTimer[uid]);
+						playerTimer[uid] = nullptr;
+						pthread_mutex_unlock(&mutex);
+
+					}
+					break;
+				}
+
+				case GoBang::JOIN_ROOM:{
+					std::cout << fd << " " << "JOIN_ROOM\n";
+					//加入房间后 会立刻开始游戏
+					//给另外一位玩家先发送 msg然后直接发送 开始游戏
+					if(goBangRequest.has_joinroomreq()){
+						std::string uid = goBangRequest.joinroomreq().uid();
+						std::string rid = goBangRequest.joinroomreq().rid();
+
+						pthread_mutex_lock(&mutex);
+						if(onlineRooms.count(rid) == 0){
+							pthread_mutex_unlock(&mutex);
+							//不存在该房间 加入失败
+							goBangResponse.set_type(GoBang::JOIN_ROOM);
+							GoBang::JoinRoomResponse *joinRoomResponse = goBangResponse.mutable_joinroomresp();
+							joinRoomResponse->set_success(false);
+							joinRoomResponse->set_msg("不存在该房间");
+
+							//序列化
+							std::string r = goBangResponse.SerializeAsString();
+							int length = r.length();
+							int *ptr = &length;
+							char sendBuff[4 + r.length()];
+							memset(sendBuff, 0, sizeof (sendBuff));
+							memcpy(sendBuff, ptr, sizeof (int));
+							sprintf(sendBuff + 4,"%s", r.c_str());
+							//发送
+							send(fd,sendBuff,4 + r.length(),0);
+
+							pthread_mutex_lock(&mutex);
+							//调整定时器
+							playerTimer[uid]->expire = time(nullptr) + 30 * 60;
+							timeList.adjustTimer(playerTimer[uid]);
+							pthread_mutex_unlock(&mutex);
+						}
+						else{
+							//存在该房间
+							char sendBuff[4096];
+							goBangResponse.set_type(GoBang::JOIN_ROOM);
+							GoBang::JoinRoomResponse *joinRoomResponse = goBangResponse.mutable_joinroomresp();
+							int flag = onlineRooms[rid]->addPlayer(fd, *onlinePlayers[uid], GoBang::WHITE);
+							if(flag == -1){
+								//加入失败
+								pthread_mutex_unlock(&mutex);
+								//人数满
+								joinRoomResponse->set_success(false);
+								joinRoomResponse->set_msg("人数已满");
+								//序列化
+								std::string r = goBangResponse.SerializeAsString();
+								int length = r.length();
+
+								int *ptr = &length;
+								memset(sendBuff, 0, sizeof (sendBuff));
+								memcpy(sendBuff, ptr, sizeof (int));
+								sprintf(sendBuff + 4,"%s", r.c_str());
+								//发送
+								send(fd,sendBuff,4 + r.length(),0);
+
+								pthread_mutex_lock(&mutex);
+								//调整定时器
+								playerTimer[uid]->expire = time(nullptr) + 30 * 60;
+								timeList.adjustTimer(playerTimer[uid]);
+								pthread_mutex_unlock(&mutex);
+							}
+							else if(flag == -2){
+								//断线 加入成功
+								//删除长时间不进行游戏的定时器
+								timeList.delTimer(playerTimer[uid]);
+								playerTimer[uid] = nullptr;
+								pthread_mutex_unlock(&mutex);
+
+								joinRoomResponse->set_success(true);
+								joinRoomResponse->set_rid(rid);
+								//序列化
+								std::string r = goBangResponse.SerializeAsString();
+								int length = r.length();
+
+								int *ptr = &length;
+								memset(sendBuff, 0, sizeof (sendBuff));
+								memcpy(sendBuff, ptr, sizeof (int));
+								sprintf(sendBuff + 4,"%s", r.c_str());
+								//发送
+								send(fd,sendBuff,4 + r.length(),0);
+
+
+								//发送开始游戏
+								goBangResponse.clear_type();
+								goBangResponse.clear_joinroomresp();
+
+								goBangResponse.set_type(GoBang::GAMESTART);
+								GoBang::GameStart *gameStart = goBangResponse.mutable_gamestart();
+
+								pthread_mutex_lock(&mutex);
+
+								int anotherFd = onlineRooms[rid]->getAnotherPlayerFd(uid);
+								GoBang::PieceColor anotherC = onlineRooms[rid]->getAnotherPlayerPieceColor(uid);
+								gameStart->set_mycolor(onlineRooms[rid]->getPlayerPieceColor(uid));
+								gameStart->set_competitorcolor(anotherC);
+								gameStart->set_competitorid(allFd[anotherFd]);
+								gameStart->set_competitorname(onlinePlayers[allFd[anotherFd]]->name());
+								gameStart->set_rid(rid);
+
+								pthread_mutex_unlock(&mutex);
+
+								//序列化
+								r = goBangResponse.SerializeAsString();
+								length = r.length();
+								ptr = &length;
+								memset(sendBuff, 0, sizeof (sendBuff));
+								memcpy(sendBuff, ptr, sizeof (int));
+								sprintf(sendBuff + 4,"%s", r.c_str());
+								//发送
+								send(fd,sendBuff,4 + r.length(),0);
+
+								//发送棋局
+								goBangResponse.clear_type();
+								goBangResponse.clear_gamestart();
+								goBangResponse.set_type(GoBang::SET_PIECE);
+								GoBang::SetPieceResponse *setPieceResponse = goBangResponse.mutable_setpieceresp();
+								setPieceResponse->set_success(true);
+
+								pthread_mutex_lock(&mutex);
+								setPieceResponse->set_next(onlineRooms[rid]->getNextColor());
+								GoBang::Border *border = setPieceResponse->mutable_b();
+								*border = onlineRooms[rid]->getBorder();
+
+								pthread_mutex_unlock(&mutex);
+
+								//序列化
+								r = goBangResponse.SerializeAsString();
+								length = r.length();
+								ptr = &length;
+								memset(sendBuff, 0, sizeof (sendBuff));
+								memcpy(sendBuff, ptr, sizeof (int));
+								sprintf(sendBuff + 4,"%s", r.c_str());
+								//发送
+								send(fd,sendBuff,4 + r.length(),0);
+
+							}
+							else if(flag == 2){
+								playerRoom[uid] = onlineRooms[rid];
+								//加入成功
+								//删除长时间不进行游戏的定时器
+								timeList.delTimer(playerTimer[uid]);
+								playerTimer[uid] = nullptr;
+								pthread_mutex_unlock(&mutex);
+
+								joinRoomResponse->set_success(true);
+								joinRoomResponse->set_rid(rid);
+								//序列化
+								std::string r = goBangResponse.SerializeAsString();
+								int length = r.length();
+
+								int *ptr = &length;
+								memset(sendBuff, 0, sizeof (sendBuff));
+								memcpy(sendBuff, ptr, sizeof (int));
+								sprintf(sendBuff + 4,"%s", r.c_str());
+								//发送
+								send(fd,sendBuff,4 + r.length(),0);
+
+								pthread_mutex_lock(&mutex);
+								onlineRooms[rid]->initGame();
+
+								//发送开始游戏
+								goBangResponse.clear_type();
+								goBangResponse.clear_joinroomresp();
+
+								goBangResponse.set_type(GoBang::GAMESTART);
+								GoBang::GameStart *gameStart = goBangResponse.mutable_gamestart();
+
+								int anotherFd = onlineRooms[rid]->getAnotherPlayerFd(uid);
+								GoBang::PieceColor anotherC = onlineRooms[rid]->getAnotherPlayerPieceColor(uid);
+								gameStart->set_mycolor(onlineRooms[rid]->getPlayerPieceColor(uid));
+								gameStart->set_competitorcolor(anotherC);
+								gameStart->set_competitorid(allFd[anotherFd]);
+								gameStart->set_competitorname(onlinePlayers[allFd[anotherFd]]->name());
+								gameStart->set_rid(rid);
+
+								pthread_mutex_unlock(&mutex);
+
+								//序列化
+								r = goBangResponse.SerializeAsString();
+								length = r.length();
+								ptr = &length;
+								memset(sendBuff, 0, sizeof (sendBuff));
+								memcpy(sendBuff, ptr, sizeof (int));
+								sprintf(sendBuff + 4,"%s", r.c_str());
+								//发送
+								send(fd,sendBuff,4 + r.length(),0);
+
+								pthread_mutex_lock(&mutex);
+								//发送给另外一个玩家
+								gameStart->set_mycolor(anotherC);
+								gameStart->set_competitorcolor(onlineRooms[rid]->getPlayerPieceColor(uid));
+								gameStart->set_competitorid(uid);
+								gameStart->set_competitorname(onlinePlayers[allFd[fd]]->name());
+								gameStart->set_rid(rid);
+								pthread_mutex_unlock(&mutex);
+
+								//序列化
+								r = goBangResponse.SerializeAsString();
+								length = r.length();
+								ptr = &length;
+								memset(sendBuff, 0, sizeof (sendBuff));
+								memcpy(sendBuff, ptr, sizeof (int));
+								sprintf(sendBuff + 4,"%s", r.c_str());
+								//发送
+								send(fd,sendBuff,4 + r.length(),0);
+
+
+								//发送setpieceresponse
+								goBangResponse.clear_type();
+								goBangResponse.clear_gamestart();
+								goBangResponse.set_type(GoBang::SET_PIECE);
+								GoBang::SetPieceResponse *setPieceResponse = goBangResponse.mutable_setpieceresp();
+								setPieceResponse->set_success(true);
+
+								pthread_mutex_lock(&mutex);
+
+								setPieceResponse->set_next(onlineRooms[rid]->getNextColor());
+								GoBang::Border *border = setPieceResponse->mutable_b();
+								*border = onlineRooms[rid]->getBorder();
+
+								pthread_mutex_unlock(&mutex);
+
+								//序列化
+								r = goBangResponse.SerializeAsString();
+								length = r.length();
+								ptr = &length;
+								memset(sendBuff, 0, sizeof (sendBuff));
+								memcpy(sendBuff, ptr, sizeof (int));
+								sprintf(sendBuff + 4,"%s", r.c_str());
+								//发送
+								send(fd,sendBuff,4 + r.length(),0);
+								send(anotherFd,sendBuff,4 + r.length(),0);
+
+
+								pthread_mutex_lock(&mutex);
+								onlineRooms[rid]->gameState = true;
+								pthread_mutex_unlock(&mutex);
+
+							}
+						}
+					}
+					break;
+				}
+
+				case GoBang::SET_PIECE:{
+					std::cout << fd << " " << "SET_PIECE\n";
+					char sendBuff[1024];
+					if(goBangRequest.has_setpiecereq()){
+						GoBang::Piece p = goBangRequest.setpiecereq().p();
+						std::string rid = goBangRequest.setpiecereq().rid();
+
+						pthread_mutex_lock(&mutex);
+
+						onlineRooms[rid]->setPiece(p);
+						//发送setpieceresponse
+						goBangResponse.set_type(GoBang::SET_PIECE);
+						GoBang::SetPieceResponse *setPieceResponse = goBangResponse.mutable_setpieceresp();
+						setPieceResponse->set_success(true);
+						setPieceResponse->set_next(onlineRooms[rid]->getNextColor());
+						GoBang::Border *border = setPieceResponse->mutable_b();
+						*border = onlineRooms[rid]->getBorder();
+						int anotherFd = onlineRooms[rid]->getAnotherPlayerFd(allFd[fd]);
+
+						pthread_mutex_unlock(&mutex);
+						//序列化
+						std::string r = goBangResponse.SerializeAsString();
+						int length = r.length();
+						int *ptr = &length;
+
+						memset(sendBuff, 0, sizeof (sendBuff));
+						memcpy(sendBuff, ptr, sizeof (int));
+						sprintf(sendBuff + 4,"%s", r.c_str());
+						//发送
+						send(fd,sendBuff,4 + r.length(),0);
+						send(anotherFd,sendBuff,4 + r.length(),0);
+
+						//检查该玩家落子后是否胜利
+						pthread_mutex_lock(&mutex);
+						if(onlineRooms[rid]->getIsWin()){
+							//winUid即本身的
+							std::string winUid = onlineRooms[rid]->getWhoWin();
+							pthread_mutex_unlock(&mutex);
+							//有人胜利 发送gameover
+							goBangResponse.clear_type();
+							goBangResponse.clear_setpieceresp();
+
+							GoBang::GameOver *gameOver = goBangResponse.mutable_gameover();
+							gameOver->set_iswin(true);
+							gameOver->set_winuid(winUid);
+							//序列化
+							r = goBangResponse.SerializeAsString();
+							length = r.length();
+							ptr = &length;
+
+							memset(sendBuff, 0, sizeof (sendBuff));
+							memcpy(sendBuff, ptr, sizeof (int));
+							sprintf(sendBuff + 4,"%s", r.c_str());
+							//发送
+							send(fd, sendBuff, 4 + r.length(), 0);
+
+							//发送给另外一位玩家
+							gameOver->set_iswin(false);
+							//序列化
+							r = goBangResponse.SerializeAsString();
+							length = r.length();
+							ptr = &length;
+
+							memset(sendBuff, 0, sizeof (sendBuff));
+							memcpy(sendBuff, ptr, sizeof (int));
+							sprintf(sendBuff + 4,"%s", r.c_str());
+							//发送
+							send(anotherFd, sendBuff, 4 + r.length(), 0);
+						}
+						else{
+							pthread_mutex_unlock(&mutex);
+						}
+
+					}
+					break;
+				}
+
+				case GoBang::UNDO:{
+					std::cout << fd << " " << "UNDO\n";
+					if(goBangRequest.has_undoreq()){
+						std::string uid = goBangRequest.undoreq().uid();
+						std::string rid = goBangRequest.undoreq().rid();
+
+						pthread_mutex_lock(&mutex);
+						int anotherFd = onlineRooms[rid]->getAnotherPlayerFd(uid);
+						pthread_mutex_unlock(&mutex);
+
+						//直接转发
+						send(anotherFd, message[i].c_str(), message[i].length(), 0);
+					}
+					if(goBangRequest.has_undoresp()){
+						bool success = goBangResponse.undoresp().success();
+						std::string uid = goBangRequest.undoresp().uid();
+						std::string rid = goBangRequest.undoresp().rid();
+
+						pthread_mutex_lock(&mutex);
+						int anotherFd = onlineRooms[rid]->getAnotherPlayerFd(uid);
+						pthread_mutex_unlock(&mutex);
+
+						//直接转发
+						send(anotherFd, message[i].c_str(), message[i].length(), 0);
+						
+						if(success){
+
+							pthread_mutex_lock(&mutex);
+							//同意悔棋
+							GoBang::PieceColor anotherC = onlineRooms[rid]->getAnotherPlayerPieceColor(uid);
+							onlineRooms[rid]->unDo(anotherC);
+
+							GoBang::Border b = onlineRooms[rid]->getBorder();
+							GoBang::PieceColor nextColor = onlineRooms[rid]->getNextColor();
+
+							//发送setpieceresponse
+							goBangResponse.clear_type();
+							goBangResponse.clear_undoresp();
+							goBangResponse.set_type(GoBang::SET_PIECE);
+							GoBang::SetPieceResponse *setPieceResponse = goBangResponse.mutable_setpieceresp();
+							setPieceResponse->set_success(true);
+							setPieceResponse->set_next(nextColor);
+							GoBang::Border *border = setPieceResponse->mutable_b();
+							*border = b;
+
+							pthread_mutex_unlock(&mutex);
+
+							//序列化
+							std::string r = goBangResponse.SerializeAsString();
+							int length = r.length();
+							int *ptr = &length;
+
+							char sendBuff[4 + length];
+							memset(sendBuff, 0, sizeof (sendBuff));
+							memcpy(sendBuff, ptr, sizeof (int));
+							sprintf(sendBuff + 4,"%s", r.c_str());
+							//发送
+							send(fd,sendBuff,4 + r.length(),0);
+							send(anotherFd,sendBuff,4 + r.length(),0);
+						}
+						
+					}
+					break;
+				}
+
+				case GoBang::TIE:{
+					std::cout << fd << " " << "TIE\n";
+					if(goBangRequest.has_tiereq()){
+						std::string uid = goBangRequest.tiereq().uid();
+						std::string rid = goBangRequest.tiereq().rid();
+
+						pthread_mutex_lock(&mutex);
+						int anotherFd = onlineRooms[rid]->getAnotherPlayerFd(uid);
+						pthread_mutex_unlock(&mutex);
+
+						//直接转发
+						send(anotherFd, message[i].c_str(), message[i].length(), 0);
+					}
+					if(goBangRequest.has_tieresp()) {
+						bool success = goBangResponse.tieresp().success();
+						std::string uid = goBangRequest.tieresp().uid();
+						std::string rid = goBangRequest.tieresp().rid();
+
+						pthread_mutex_lock(&mutex);
+						int anotherFd = onlineRooms[rid]->getAnotherPlayerFd(uid);
+						pthread_mutex_unlock(&mutex);
+
+						//直接转发
+						send(anotherFd, message[i].c_str(), message[i].length(), 0);
+
+						if (success) {
+							//同意求和 发送gameover
+							goBangResponse.set_type(GoBang::GAMEOVER);
+							GoBang::GameOver *gameOver = goBangResponse.mutable_gameover();
+							gameOver->set_iswin(true);
+							gameOver->set_winuid("#");
+
+							//序列化
+							std::string r = goBangResponse.SerializeAsString();
+							int length = r.length();
+							int *ptr = &length;
+							char sendBuff[4 + length];
+							memset(sendBuff, 0, sizeof (sendBuff));
+							memcpy(sendBuff, ptr, sizeof (int));
+							sprintf(sendBuff + 4,"%s", r.c_str());
+							//发送
+							send(fd, sendBuff, 4 + r.length(), 0);
+							send(anotherFd, sendBuff, 4 + r.length(), 0);
+
+							pthread_mutex_lock(&mutex);
+							onlineRooms[rid]->gameState = false;
+							pthread_mutex_unlock(&mutex);
+						}
+					}
+					break;
+				}
+
+				case GoBang::SURRENDER:{
+					std::cout << fd << " " << "SURRENDER\n";
+					char sendBuff[2048];
+					//一方投降 发送gameover 并对人物积分进行相应的增减
+					if(goBangRequest.has_surrenderreq()){
+						std::string uid = goBangRequest.surrenderreq().uid();
+						std::string rid = goBangRequest.surrenderreq().rid();
+
+						pthread_mutex_lock(&mutex);
+						int anotherFd = onlineRooms[rid]->getAnotherPlayerFd(uid);
+						pthread_mutex_unlock(&mutex);
+
+						//发送
+						goBangResponse.set_type(GoBang::GAMEOVER);
+						GoBang::GameOver *gameOver = goBangResponse.mutable_gameover();
+						gameOver->set_iswin(true);
+						gameOver->set_winuid(allFd[anotherFd]);
+
+						//序列化
+						std::string r = goBangResponse.SerializeAsString();
+						int length = r.length();
+						int *ptr = &length;
+
+
+						memset(sendBuff, 0, sizeof (sendBuff));
+						memcpy(sendBuff, ptr, sizeof (int));
+						sprintf(sendBuff + 4,"%s", r.c_str());
+						//发送
+						send(anotherFd, sendBuff, 4 + r.length(), 0);
+
+
+						gameOver->set_iswin(false);
+						//序列化
+						r = goBangResponse.SerializeAsString();
+						length = r.length();
+						ptr = &length;
+						memset(sendBuff, 0, sizeof (sendBuff));
+						memcpy(sendBuff, ptr, sizeof (int));
+						sprintf(sendBuff + 4,"%s", r.c_str());
+						//发送
+						send(fd, sendBuff, 4 + r.length(), 0);
+
+						pthread_mutex_lock(&mutex);
+						//更新数据
+						int points = onlinePlayers[uid]->points();
+						onlinePlayers[uid]->set_points(points - 10);
+						points = onlinePlayers[allFd[anotherFd]]->points();
+						onlinePlayers[allFd[anotherFd]]->set_points(points + 10);
+
+						onlineRooms[rid]->gameState = false;
+						pthread_mutex_unlock(&mutex);
+					}
+					break;
+				}
+
+				case GoBang::MSG:{
+					std::cout << fd << " " << "MSG\n";
+					//直接转发
+					if(goBangRequest.has_messg()){
+						std::string uid = goBangRequest.messg().uid();
+						std::string rid = goBangRequest.messg().rid();
+
+						pthread_mutex_lock(&mutex);
+						int anotherFd = onlineRooms[rid]->getAnotherPlayerFd(uid);
+						pthread_mutex_unlock(&mutex);
+						//直接转发
+						send(anotherFd, message[i].c_str(), message[i].length(), 0);
+					}
+					break;
+				}
+
+				case GoBang::CONTINUE_GAME:{
+					std::cout << fd << " " << "CONTINUE_GAME\n";
+					//将room中 continue + 1 如果 continue == 2 那么发送startgame开始游戏
+					char sendBuff[4096];
+					if(goBangRequest.has_continuegamereq()){
+						std::string uid = goBangRequest.messg().uid();
+						std::string rid = goBangRequest.messg().rid();
+
+						pthread_mutex_lock(&mutex);
+						onlineRooms[rid]->continueGame++;
+						if(onlineRooms[rid]->continueGame){
+							//两个人都想继续游戏
+							onlineRooms[rid]->initGame();
+
+							//发送开始游戏startgame
+
+							goBangResponse.set_type(GoBang::GAMESTART);
+							GoBang::GameStart *gameStart = goBangResponse.mutable_gamestart();
+
+							int anotherFd = onlineRooms[rid]->getAnotherPlayerFd(uid);
+							GoBang::PieceColor anotherC = onlineRooms[rid]->getAnotherPlayerPieceColor(uid);
+							GoBang::PieceColor myC = onlineRooms[rid]->getPlayerPieceColor(uid);
+							std::string myName = onlinePlayers[allFd[fd]]->name();
+							std::string anotherName = onlinePlayers[allFd[anotherFd]]->name();
+
+							gameStart->set_mycolor(myC);
+							gameStart->set_competitorcolor(anotherC);
+							gameStart->set_competitorid(allFd[anotherFd]);
+							gameStart->set_competitorname(anotherName);
+							gameStart->set_rid(rid);
+
+							pthread_mutex_unlock(&mutex);
+							//序列化
+							std::string r = goBangResponse.SerializeAsString();
+							int length = r.length();
+							int *ptr = &length;
+
+							memset(sendBuff, 0, sizeof (sendBuff));
+							memcpy(sendBuff, ptr, sizeof (int));
+							sprintf(sendBuff + 4,"%s", r.c_str());
+							//发送
+							send(fd,sendBuff,4 + r.length(),0);
+
+							//发送给另外一个玩家
+							gameStart->set_mycolor(anotherC);
+							gameStart->set_competitorcolor(myC);
+							gameStart->set_competitorid(uid);
+							gameStart->set_competitorname(myName);
+							gameStart->set_rid(rid);
+
+							//序列化
+							r = goBangResponse.SerializeAsString();
+							length = r.length();
+							ptr = &length;
+							memset(sendBuff, 0, sizeof (sendBuff));
+							memcpy(sendBuff, ptr, sizeof (int));
+							sprintf(sendBuff + 4,"%s", r.c_str());
+							//发送
+							send(fd,sendBuff,4 + r.length(),0);
+
+							pthread_mutex_lock(&mutex);
+							//发送setpieceresponse
+							GoBang::Border b = onlineRooms[rid]->getBorder();
+							GoBang::PieceColor nextColor = onlineRooms[rid]->getNextColor();
+
+							goBangResponse.clear_type();
+							goBangResponse.clear_gamestart();
+							goBangResponse.set_type(GoBang::SET_PIECE);
+							GoBang::SetPieceResponse *setPieceResponse = goBangResponse.mutable_setpieceresp();
+							setPieceResponse->set_success(true);
+							setPieceResponse->set_next(nextColor);
+							GoBang::Border *border = setPieceResponse->mutable_b();
+							*border = b;
+							pthread_mutex_unlock(&mutex);
+							//序列化
+							r = goBangResponse.SerializeAsString();
+							length = r.length();
+							ptr = &length;
+							memset(sendBuff, 0, sizeof (sendBuff));
+							memcpy(sendBuff, ptr, sizeof (int));
+							sprintf(sendBuff + 4,"%s", r.c_str());
+							//发送
+							send(fd,sendBuff,4 + r.length(),0);
+							send(anotherFd,sendBuff,4 + r.length(),0);
+
+						}
+						else pthread_mutex_unlock(&mutex);
+					}
+					break;
+				}
+
+				case GoBang::QUIT_ROOM:{
+					std::cout << fd << " " << "QUIT_ROOM\n";
+					//退出房间后 一个房间中的人数 = 0 消除该房间
+					char sendBuff[2048];
+					if(goBangRequest.has_quitroomreq()){
+						std::string uid = goBangRequest.quitroomreq().uid();
+						std::string rid = goBangRequest.quitroomreq().rid();
+
+						pthread_mutex_lock(&mutex);
+						room *r = onlineRooms[rid];
+						int cnt = r->playerQuitRoom(uid);
+						bool state = r->gameState;
+						int anotherFd = onlineRooms[rid]->getAnotherPlayerFd(uid);
+
+						if(state){
+							pthread_mutex_unlock(&mutex);
+							//正在游戏中 退出房间 直接判输 另外一位玩家赢
+							//发送
+							goBangResponse.set_type(GoBang::GAMEOVER);
+							GoBang::GameOver *gameOver = goBangResponse.mutable_gameover();
+							gameOver->set_iswin(true);
+							gameOver->set_winuid(allFd[anotherFd]);
+							gameOver->set_msg("对方退出房间！");
+
+							//序列化
+							std::string res = goBangResponse.SerializeAsString();
+							int length = res.length();
+							int *ptr = &length;
+
+
+							memset(sendBuff, 0, sizeof (sendBuff));
+							memcpy(sendBuff, ptr, sizeof (int));
+							sprintf(sendBuff + 4,"%s", res.c_str());
+							//发送
+							send(anotherFd, sendBuff, 4 + res.length(), 0);
+
+							pthread_mutex_lock(&mutex);
+							//更新数据
+							int points = onlinePlayers[uid]->points();
+							onlinePlayers[uid]->set_points(points - 10);
+							points = onlinePlayers[allFd[anotherFd]]->points();
+							onlinePlayers[allFd[anotherFd]]->set_points(points + 10);
+
+							r->gameState = false;
+							pthread_mutex_unlock(&mutex);
+						}
+						else{
+							//不在游戏中
+							if(cnt == 0){
+								//全部退出房间了 销毁房间资源
+								delete onlineRooms[rid];
+								onlineRooms.erase(rid);
+							}
+							else{
+								//给另外一位玩家发送对方退出房间的消息
+								goBangResponse.set_type(GoBang::QUIT_ROOM);
+								GoBang::QuitRoomResponse *quitRoomResponse = goBangResponse.mutable_quitroomresp();
+								quitRoomResponse->set_uid(uid);
+								quitRoomResponse->set_name(onlinePlayers[uid]->name());
+
+								//序列化
+								std::string res = goBangResponse.SerializeAsString();
+								int length = res.length();
+								int *ptr = &length;
+
+
+								memset(sendBuff, 0, sizeof (sendBuff));
+								memcpy(sendBuff, ptr, sizeof (int));
+								sprintf(sendBuff + 4,"%s", res.c_str());
+								//发送
+								send(anotherFd, sendBuff, 4 + res.length(), 0);
+							}
+							pthread_mutex_unlock(&mutex);
+						}
+
+						//添加不长时间进行游戏的定时器
+						pthread_mutex_lock(&mutex);
+						playerRoom[uid] = nullptr;
+						addTimeTask(fd, uid, 30 * 60, 1);
+						pthread_mutex_unlock(&mutex);
+					}
+					break;
+				}
+
+				case GoBang::GAMESTART:{
+					//不会收到
+					break;
+				}
+
+				case GoBang::GAMEOVER:{
+					//不会收到
+					break;
+				}
+
+				case GoBang::TYPE_INT_MIN_SENTINEL_DO_NOT_USE_:{
+					break;
+				}
+
+				case GoBang::TYPE_INT_MAX_SENTINEL_DO_NOT_USE_:{
+					break;
+				}
+			}
+		}
+	}
+	//重新注册读事件
+	myUtils::fdMode(ep_fd, fd, EPOLLIN);
+	return nullptr;
+}
+
+void* normalMatchThread(void *arg){
+	std::string p[2];
+	int index = 0;
+	int length = 0;
+	int *ptr = &length;
+	char sendBuff[4096];
+	while(true){
+		pthread_mutex_lock(&mutex);
+		if(normalMatch.size() == 0){
+			//凑不出两个人 将已近取出的一个人放回去
+			if(index == 1) normalMatch.push_front(p[index]);
+		}
+		if(normalMatch.size() == 1 && index == 0) break;
+
+		p[index] = normalMatch.front();
+		normalMatch.pop_front();
+		//说明该玩家 已下线 不匹配该玩家
+		if(onlinePlayers.count(p[index]) == 0) continue;
+		index++;
+		if(index == 2){
+			index = 0;
+			std::string uid = p[0];
+			std::string anotherUid = p[1];
+
+			//获取rid
+			std::string rid = std::to_string(roomId);
+			roomId++;
+
+			//创建房间
+			room *rm = new room(rid);
+			onlineRooms[rid] = rm;
+
+			//将该玩家加入房间
+			int fd = uidFd[uid];
+			int anotherFd = uidFd[anotherUid];
+			rm->addPlayer(fd, *onlinePlayers[uid], GoBang::BLACK);
+			rm->addPlayer(anotherFd, *onlinePlayers[anotherUid], GoBang::WHITE);
+			playerRoom[uid] = rm;
+			playerRoom[anotherUid] = rm;
+
+			pthread_mutex_unlock(&mutex);
+
+			GoBang::GoBangResponse goBangResponse;
+			goBangResponse.set_type(GoBang::GAMESTART);
+
+			pthread_mutex_lock(&mutex);
+			onlineRooms[rid]->initGame();
+
+			//发送开始游戏
+
+			goBangResponse.set_type(GoBang::GAMESTART);
+			GoBang::GameStart *gameStart = goBangResponse.mutable_gamestart();
+
+			anotherFd = onlineRooms[rid]->getAnotherPlayerFd(uid);
+			GoBang::PieceColor anotherC = onlineRooms[rid]->getAnotherPlayerPieceColor(uid);
+			gameStart->set_mycolor(onlineRooms[rid]->getPlayerPieceColor(uid));
+			gameStart->set_competitorcolor(anotherC);
+			gameStart->set_competitorid(allFd[anotherFd]);
+			gameStart->set_competitorname(onlinePlayers[allFd[anotherFd]]->name());
+			gameStart->set_rid(rid);
+
+			pthread_mutex_unlock(&mutex);
+
+			//序列化
+			std::string r = goBangResponse.SerializeAsString();
+
+			length = r.length();
+			memset(sendBuff, 0, sizeof (sendBuff));
+			memcpy(sendBuff, ptr, sizeof (int));
+			sprintf(sendBuff + 4,"%s", r.c_str());
+			//发送
+			send(fd,sendBuff,4 + r.length(),0);
+
+			pthread_mutex_lock(&mutex);
+			//发送给另外一个玩家
+			gameStart->set_mycolor(anotherC);
+			gameStart->set_competitorcolor(onlineRooms[rid]->getPlayerPieceColor(uid));
+			gameStart->set_competitorid(uid);
+			gameStart->set_competitorname(onlinePlayers[allFd[fd]]->name());
+			gameStart->set_rid(rid);
+			pthread_mutex_unlock(&mutex);
+
+			//序列化
+			r = goBangResponse.SerializeAsString();
+			length = r.length();
+			memset(sendBuff, 0, sizeof (sendBuff));
+			memcpy(sendBuff, ptr, sizeof (int));
+			sprintf(sendBuff + 4,"%s", r.c_str());
+			//发送
+			send(fd,sendBuff,4 + r.length(),0);
+
+
+			//发送setpieceresponse
+			goBangResponse.clear_type();
+			goBangResponse.clear_gamestart();
+			goBangResponse.set_type(GoBang::SET_PIECE);
+			GoBang::SetPieceResponse *setPieceResponse = goBangResponse.mutable_setpieceresp();
+			setPieceResponse->set_success(true);
+
+			pthread_mutex_lock(&mutex);
+
+			setPieceResponse->set_next(onlineRooms[rid]->getNextColor());
+			GoBang::Border *border = setPieceResponse->mutable_b();
+			*border = onlineRooms[rid]->getBorder();
+
+			pthread_mutex_unlock(&mutex);
+
+			//序列化
+			r = goBangResponse.SerializeAsString();
+			length = r.length();
+			ptr = &length;
+			memset(sendBuff, 0, sizeof (sendBuff));
+			memcpy(sendBuff, ptr, sizeof (int));
+			sprintf(sendBuff + 4,"%s", r.c_str());
+			//发送
+			send(fd,sendBuff,4 + r.length(),0);
+			send(anotherFd,sendBuff,4 + r.length(),0);
+
+			pthread_mutex_lock(&mutex);
+			onlineRooms[rid]->gameState = true;
+			pthread_mutex_unlock(&mutex);
+		}
+		else{
+			pthread_mutex_unlock(&mutex);
+		}
+	}
+	return nullptr;
+}
+
+void* rankMatchThread(void *arg){
+	int idx = *(int *)arg;
+	delete (int *)arg;
+
+	std::string p[2];
+	int index = 0;
+	int length = 0;
+	int *ptr = &length;
+	char sendBuff[4096];
+	while(true){
+		pthread_mutex_lock(&mutex);
+		if(rankMatch[idx].size() == 0){
+			//凑不出两个人 将已近取出的一个人放回去
+			if(index == 1) rankMatch[idx].push_front(p[index]);
+		}
+		if(rankMatch[idx].size() == 1 && index == 0) break;
+
+		p[index] = rankMatch[idx].front();
+		rankMatch[idx].pop_front();
+		//说明该玩家 已下线 不匹配该玩家
+		if(onlinePlayers.count(p[index]) == 0) continue;
+		index++;
+		if(index == 2){
+			index = 0;
+			std::string uid = p[0];
+			std::string anotherUid = p[1];
+
+			//获取rid
+			std::string rid = std::to_string(roomId);
+			roomId++;
+
+			//创建房间
+			room *rm = new room(rid);
+			onlineRooms[rid] = rm;
+
+			//将该玩家加入房间
+			int fd = uidFd[uid];
+			int anotherFd = uidFd[anotherUid];
+			rm->addPlayer(fd, *onlinePlayers[uid], GoBang::BLACK);
+			rm->addPlayer(anotherFd, *onlinePlayers[anotherUid], GoBang::WHITE);
+			playerRoom[uid] = rm;
+			playerRoom[anotherUid] = rm;
+
+			pthread_mutex_unlock(&mutex);
+
+			GoBang::GoBangResponse goBangResponse;
+			goBangResponse.set_type(GoBang::GAMESTART);
+
+			pthread_mutex_lock(&mutex);
+			onlineRooms[rid]->initGame();
+
+			//发送开始游戏
+
+			goBangResponse.set_type(GoBang::GAMESTART);
+			GoBang::GameStart *gameStart = goBangResponse.mutable_gamestart();
+
+			anotherFd = onlineRooms[rid]->getAnotherPlayerFd(uid);
+			GoBang::PieceColor anotherC = onlineRooms[rid]->getAnotherPlayerPieceColor(uid);
+			gameStart->set_mycolor(onlineRooms[rid]->getPlayerPieceColor(uid));
+			gameStart->set_competitorcolor(anotherC);
+			gameStart->set_competitorid(allFd[anotherFd]);
+			gameStart->set_competitorname(onlinePlayers[allFd[anotherFd]]->name());
+			gameStart->set_rid(rid);
+
+			pthread_mutex_unlock(&mutex);
+
+			//序列化
+			std::string r = goBangResponse.SerializeAsString();
+
+			length = r.length();
+			memset(sendBuff, 0, sizeof (sendBuff));
+			memcpy(sendBuff, ptr, sizeof (int));
+			sprintf(sendBuff + 4,"%s", r.c_str());
+			//发送
+			send(fd,sendBuff,4 + r.length(),0);
+
+			pthread_mutex_lock(&mutex);
+			//发送给另外一个玩家
+			gameStart->set_mycolor(anotherC);
+			gameStart->set_competitorcolor(onlineRooms[rid]->getPlayerPieceColor(uid));
+			gameStart->set_competitorid(uid);
+			gameStart->set_competitorname(onlinePlayers[allFd[fd]]->name());
+			gameStart->set_rid(rid);
+			pthread_mutex_unlock(&mutex);
+
+			//序列化
+			r = goBangResponse.SerializeAsString();
+			length = r.length();
+			memset(sendBuff, 0, sizeof (sendBuff));
+			memcpy(sendBuff, ptr, sizeof (int));
+			sprintf(sendBuff + 4,"%s", r.c_str());
+			//发送
+			send(fd,sendBuff,4 + r.length(),0);
+
+
+			//发送setpieceresponse
+			goBangResponse.clear_type();
+			goBangResponse.clear_gamestart();
+			goBangResponse.set_type(GoBang::SET_PIECE);
+			GoBang::SetPieceResponse *setPieceResponse = goBangResponse.mutable_setpieceresp();
+			setPieceResponse->set_success(true);
+
+			pthread_mutex_lock(&mutex);
+
+			setPieceResponse->set_next(onlineRooms[rid]->getNextColor());
+			GoBang::Border *border = setPieceResponse->mutable_b();
+			*border = onlineRooms[rid]->getBorder();
+
+			pthread_mutex_unlock(&mutex);
+
+			//序列化
+			r = goBangResponse.SerializeAsString();
+			length = r.length();
+			ptr = &length;
+			memset(sendBuff, 0, sizeof (sendBuff));
+			memcpy(sendBuff, ptr, sizeof (int));
+			sprintf(sendBuff + 4,"%s", r.c_str());
+			//发送
+			send(fd,sendBuff,4 + r.length(),0);
+			send(anotherFd,sendBuff,4 + r.length(),0);
+
+			pthread_mutex_lock(&mutex);
+			onlineRooms[rid]->gameState = true;
+			pthread_mutex_unlock(&mutex);
+		}
+		else{
+			pthread_mutex_unlock(&mutex);
+		}
+	}
+	return nullptr;
 }

@@ -95,7 +95,7 @@ void sort_time_list::tick() {
 		if(cur < head->expire){
 			break;
 		}
-		head->cb_func(head->user_data);
+		head->cb_func(head->fd, head->uid);
 		timer *tmp = head;
 		head = head->next;
 		delete tmp;

@@ -8,7 +8,7 @@
 #include "../protocol/myprotocol.pb.h"
 #include <stack>
 
-#define NO_WIN = 0
+#define NO_WIN  0
 #define BLACK_WIN 2
 #define WHITE_WIN 3
 
@@ -16,10 +16,7 @@
 class room {
 public:
 	room(std::string rid);
-	/**
-	 * 初始化房间 将房间内的所有 都进行初始化
-	 */
-	void initRoom();
+
 	/**
 	 * 初始化棋局
 	 */
@@ -30,7 +27,7 @@ public:
 	 * @param p_fd 玩家 fd
 	 * @param p 玩家
 	 * @param c 颜色
-	 * @return	返回房间中的玩家个数
+	 * @return	返回房间中的玩家个数 -1 加入失败 -2 表示玩家为断线重连的玩家
 	 */
 	int addPlayer(int p_fd, GoBang::Player p, GoBang::PieceColor c);
 
@@ -43,7 +40,7 @@ public:
 	 * 落子 更新棋盘
 	 * @param p 棋子信息
 	 */
-	void setPiece(GoBang::Piece p);
+	bool setPiece(const GoBang::Piece& p);
 	/**
 	 * 玩家退出房间
 	 * @param uid
@@ -61,7 +58,7 @@ public:
 	 * @param uid
 	 * @return
 	 */
-	GoBang::PieceColor& getPlayerPieceColor(const std::string &uid);
+	GoBang::PieceColor getPlayerPieceColor(const std::string &uid);
 	/**
 	 * 获取游戏中另外一位玩家的	fd
 	 * @param uid 玩家id
@@ -73,22 +70,28 @@ public:
 	 * @param uid
 	 * @return
 	 */
-	GoBang::PieceColor& getAnotherPlayerPieceColor(const std::string &uid);
+	GoBang::PieceColor getAnotherPlayerPieceColor(const std::string &uid);
+
+	GoBang::PieceColor getNextColor() const;
+
+	GoBang::Border getBorder();
+
+	void changeFD(const std::string& uid, int fd);
+
+	bool getIsWin() const;
+
+	const std::string &getWhoWin() const;
 
 private:
+	/**
+	 * 初始化房间 将房间内的所有 都进行初始化
+	 */
+	void initRoom();
 	/**
 	 * 下棋指令过后 检查是否有人胜利
 	 * @return 有人胜利 返回true 通过isWin 来查看谁胜利  无人胜利返回 false
 	 */
 	bool checkWin();
-	/**
-	 * 初始化玩家1 fd 和 p1
-	 */
-	void initP1();
-	/**
-	 * 初始化玩家2 fd 和 p2
-	 */
-	void initP2();
 public:
 	//房间id
 	std::string roomId;
@@ -102,7 +105,7 @@ public:
 	GoBang::Player p2;  //玩家2 信息 uid name points
 	GoBang::PieceColor p2_color;    //玩家2在游戏中执什么子
 	bool gameState; //该房间是否正在游戏
-
+	int continueGame;
 private:
 	const int8_t BOARD_ROW = 16;
 	const int8_t BOARD_COL = 16;
@@ -113,7 +116,7 @@ private:
 	//是否有人赢
 	bool isWin;
 	//谁赢
-	int8_t whoWin;
+	std::string whoWin;
 	//下一个该下子的颜色
 	GoBang::PieceColor next_color;
 	//棋局记录

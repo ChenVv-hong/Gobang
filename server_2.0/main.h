@@ -14,7 +14,8 @@
 #include "timer/timer.h"
 #include "utils/myUtils.h"
 #include "game/room.h"
-
+#include "DAO/UserDao.h"
+#include <deque>
 
 #define PORT 22725
 #define ADDRESS "127.0.0.1"
@@ -48,34 +49,60 @@ void addSig(int sig);
  */
 void cbFunc(int fd, std::string uid);
 /**
- * 添加定时任务
+ * 添加一个定时任务
+ * @param fd 	socket描述符
+ * @param uid	用户id
+ * @param timeslot	定时时间
+ * @param option	定时器由谁保管 0 表示 fdTimer; 1 表示 playerTimer
  */
-void addTimeTask(int fd, std::string uid, int timeslot);
+void addTimeTask(int fd, const std::string& uid, int timeslot, int option);
 /**
  * 服务器结束 回收资源
  */
 void close();
 /**
- * 将玩家从 服务器 上移除
+ * 删除玩家在 服务器 上的资源
  * @param fd 当 fd == -1 说明玩家已经断开tcp连接 清除该玩家在服务器中的内容; fd 正常 那么则需要先断开 tcp连接 在 清除玩家在服务器内容
+ *
  */
 void quitGame(int fd, const std::string &uid);
 
-/**
- * 判断玩家在不在房间中
- * @param uid
- * @return
- */
-bool isPlayerInRoom(const std::string &uid);
+///**
+// * 判断玩家在不在房间中
+// * @param uid
+// * @return
+// */
+//bool isPlayerInRoom(const std::string &uid);
+//
+///**
+// * 玩家在房间中 判断玩家是否是正在游戏中
+// * 配合 bool isPlayerInRoom(std::string uid);
+// * @param uid
+// * @return
+// */
+//bool isPlayerInGame(const std::string &uid);
 
 /**
- * 玩家在房间中 判断玩家是否是正在游戏中
- * 配合 bool isPlayerInRoom(std::string uid);
- * @param uid
+ * 工作线程函数
+ * @param arg
  * @return
  */
-bool isPlayerInGame(const std::string &uid);
+void* workThread(void *arg);
 
+/**
+ * 快速匹配线程
+ * @param arg
+ * @return
+ */
+void* normalMatchThread(void *arg);
 
+/**
+ * 排位匹配线程
+ * @param arg
+ * @return
+ */
+void* rankMatchThread(void *arg);
+
+void printServerMsg();
 
 #endif //SERVER_2_0_MAIN_H

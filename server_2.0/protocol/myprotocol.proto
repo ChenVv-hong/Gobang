@@ -51,6 +51,8 @@ enum TYPE{
     //游戏结束
     GAMEOVER = 14;
 
+    PLAYER_MESSAGE = 16;
+
 }
 
 
@@ -67,7 +69,26 @@ message LoginResponse{
     //自己知道自己的用户名 就不回传了
     string uid = 3;     //成功的话 会有uid
     int32 points = 4;   //成功的话 积分
+    //是否是重联用户
+    bool isReconnect = 5;
+    string rid = 6;
 }
+
+//描述每位用户
+message Player{
+    string uid = 1;     //用户id
+    string name = 2;    //用户名
+    int32 points = 3;   //用户积分
+}
+
+message PlayerMessageRequest{
+    string uid = 1;
+}
+
+message PlayerMessageResponse{
+    Player p = 1;
+}
+
 
 //REGISTER
 message RegisterRequest{
@@ -81,18 +102,13 @@ message RegisterResponse{
 }
 
 //RANK_LIST 建议进行分页查询
-//start 表示从第几名开始   cnt表示查询多少个 最大查询20个
+//start 表示从多少分开始   cnt表示查询多少个 最大查询20个
 message RankListRequest{
     int32 start = 1;
     int32 cnt = 2;
 }
 
-//描述每位用户
-message Player{
-    string uid = 1;     //用户id
-    string name = 2;    //用户名
-    int32 points = 3;   //用户积分
-}
+
 
 message RankListResponse{
     bool success = 1;       //是否成功
@@ -185,6 +201,7 @@ message Border{
 
 message SetPieceRequest{
     Piece p = 1;
+    string rid = 2;
 }
 
 //同步棋盘状态
@@ -199,35 +216,45 @@ message SetPieceResponse{
 //UNDO
 message UndoRequest{
     string uid = 1;
+    string rid = 2;
 }
 
 message UndoResponse{
     bool success = 1;
+    string uid = 2;
+    string rid = 3;
 }
 
 //TIE
 message TieRequest{
     string uid = 1;
+    string rid = 2;
 }
 
 message TieResponse{
     bool success = 1;
+    string uid = 2;
+    string rid = 3;
 }
 
 //SURRENDER
 message SurrenderRequest{
     string uid = 1;
+    string rid = 2;
 }
 
 //消息
 message Messg{
     string name = 1;
     string msg = 2;
+    string rid = 3;
+    string uid = 4;
 }
 
 //Continue_Game 不退出当前房间
 message ContinueGameRequest{
     string uid = 1;
+    string rid = 2;
 }
 
 message ContinueGameResponse{
@@ -237,10 +264,12 @@ message ContinueGameResponse{
 //退出当前房间
 message QuitRoomRequest{
     string uid = 1;
+    string rid = 2;
 }
 
 message QuitRoomResponse{
     string uid = 1;     //退出房间的用户id
+    string name = 2;
 }
 //游戏开始
 message GameStart{
@@ -249,13 +278,13 @@ message GameStart{
     string competitorName = 3;
     string competitorID = 4;
     string rid = 5;
-
 }
     
 //游戏结束
 message GameOver{
     bool isWin = 1;  //游戏结束 是否胜利
     string winUid = 2;
+    string msg = 3;
 }
 
 
@@ -263,7 +292,7 @@ message GameOver{
 /*
     客户端可能发出的请求，即服务端可能收到的
 */
-message goBangRequest{
+message GoBangRequest{
     TYPE type = 1;
     oneof request{
         LoginRequest loginReq = 2;
@@ -284,13 +313,15 @@ message goBangRequest{
         QuitRoomRequest quitRoomReq = 12;
         NormalMatchRequest normalMatchReq = 13;
         RankMatchRequest rankMatchReq = 16;
+        JoinRoomRequest joinRoomReq = 17;
+        PlayerMessageRequest playMessageReq = 18;
     }
 }
 
 /*
     客户端可能收到响应，即服务端可能发出的
 */
-message goBangResponse{
+message GoBangResponse{
     TYPE type = 1;
     oneof response{
         LoginResponse loginResp = 2;
@@ -300,10 +331,10 @@ message goBangResponse{
         SetPieceResponse setPieceResp = 6;
 
         //UNDO 和 TIE 直接做转发处理
-        UndoResponse undoResponse = 7;
+        UndoResponse undoResp = 7;
         TieResponse tieResp = 8;
         UndoRequest undoReq = 17;
-        UndoResponse undoResp = 18;
+        TieRequest tieRes = 18;
 
         Messg messg = 10;
         ContinueGameResponse continueGameResp = 11;
@@ -314,5 +345,8 @@ message goBangResponse{
 
         NormalMatchResponse normalMatchResp = 15;
         RankMatchResponse rankMatchResp = 16;
+
+        JoinRoomResponse joinRoomResp = 9;
+        PlayerMessageResponse playMessageResp = 19;
     }
 }

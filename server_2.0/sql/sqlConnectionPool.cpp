@@ -24,7 +24,7 @@ void connection_pool::init(std::string url, std::string User, std::string PassWo
 	m_User = User;
 	m_PassWord = PassWord;
 	m_DatabaseName = DBName;
-
+	std::cout << "数据库连接池初始化\n";
 	for (int i = 0; i < MaxConn; i++)
 	{
 		MYSQL *con = NULL;
@@ -40,6 +40,7 @@ void connection_pool::init(std::string url, std::string User, std::string PassWo
 		{
 			exit(1);
 		}
+		std::cout << i + 1 << "数据库连接以创建\n";
 		connList.push_back(con);
 		++m_FreeConn;
 	}
