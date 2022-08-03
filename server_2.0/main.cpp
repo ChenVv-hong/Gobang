@@ -108,6 +108,7 @@ int main() {
 					//对方关闭连接
 					//断开连接并且存在游戏对局 添加定时器
 					std::string uid = allFd[cfd];
+					close(cfd);
 					if(uid == "#"){
 						//玩家进行了连接就断开了 还没登陆
 						std::cout << "玩家进行了连接就断开了\n";
