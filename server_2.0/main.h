@@ -65,7 +65,7 @@ void close();
  * @param fd 当 fd == -1 说明玩家已经断开tcp连接 清除该玩家在服务器中的内容; fd 正常 那么则需要先断开 tcp连接 在 清除玩家在服务器内容
  *
  */
-void quitGame(int fd, const std::string &uid);
+void quitGame(int fd, std::string &uid);
 
 ///**
 // * 判断玩家在不在房间中
@@ -102,7 +102,13 @@ void* normalMatchThread(void *arg);
  * @return
  */
 void* rankMatchThread(void *arg);
-
+/**
+ * 打印服务器信息
+ */
 void printServerMsg();
+
+void initRList();
+
+void updateList(const GoBang::Player p);
 
 #endif //SERVER_2_0_MAIN_H

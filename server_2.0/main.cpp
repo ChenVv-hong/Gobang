@@ -25,7 +25,7 @@ timer* fdTimer[MAX_CLIENT];      //fd上的定时器 用于处理长时间不登
 
 thread_pool *threadPool;        //线程池
 connection_pool *connectionPool;    //数据库连接池
-
+std::vector<GoBang::Player> RList;  //排名数据的缓存  最多一百名
 
 
 //TODO 匹配超时
@@ -43,6 +43,8 @@ int main() {
 	connectionPool->init("localhost","root", "ChenJiaHong123!!", "GoBangServer",  3306, 10);
 	//互斥量 初始化
 	pthread_mutex_init(&mutex, nullptr);
+	//初始化 排名缓存
+	initRList();
 
 	int ret;
 	initNet();
@@ -322,7 +324,7 @@ void cbFunc(int fd, std::string uid){
 
 }
 
-void quitGame(int fd, const std::string &uid){
+void quitGame(int fd, std::string &uid){
 	//退出服务器相关
 	//将内存中的数据写到数据库
 	UserDao userDao;
@@ -349,6 +351,8 @@ void quitGame(int fd, const std::string &uid){
 			reconnectPlayers[uid]->set_points(points - 10);
 			points = onlinePlayers[allFd[anotherFd]]->points();
 			onlinePlayers[allFd[anotherFd]]->set_points(points + 10);
+			updateList(*reconnectPlayers[uid]);
+			updateList(*onlinePlayers[uid]);
 		}
 
 		GoBang::GoBangResponse goBangResponse;
@@ -705,20 +709,22 @@ void* workThread(void *arg){
 						int32_t start = goBangRequest.ranklistreq().start();
 						int32_t count = goBangRequest.ranklistreq().cnt();
 
-						//设置回传数据
-						UserDao userDao;
+
 						goBangResponse.set_type(GoBang::RANK_LIST);
-						std::vector<GoBang::Player> temp = userDao.querySomeUser(connectionPool, count, start);
-						for(int j = 0; j < temp.size(); j++){
-							GoBang::RankListResponse *rankListResponse = goBangResponse.mutable_ranklistresp();
-							rankListResponse->set_success(true);
-							rankListResponse->set_msg("");
-							//添加repeated元素
-							GoBang::Player *p = rankListResponse->add_list();
-							p->set_uid(temp[j].uid());
-							p->set_name(temp[j].name());
-							p->set_points(temp[j].points());
+						pthread_mutex_lock(&mutex);
+						if(start <= RList.size()){
+							for(int j = start - 1, k = 0; k < count && j <  RList.size(); j++, k++){
+								GoBang::RankListResponse *rankListResponse = goBangResponse.mutable_ranklistresp();
+								rankListResponse->set_success(true);
+								rankListResponse->set_msg("");
+								//添加repeated元素
+								GoBang::Player *p = rankListResponse->add_list();
+								p->set_uid(RList[j].uid());
+								p->set_name(RList[j].name());
+								p->set_points(RList[j].points());
+							}
 						}
+						pthread_mutex_unlock(&mutex);
 
 						//序列化
 						std::string r = goBangResponse.SerializeAsString();
@@ -1207,9 +1213,11 @@ void* workThread(void *arg){
 							if(onlineRooms[rid]->gametype == 2){
 								//排位模式 更新数据
 								int points = onlinePlayers[winUid]->points();
-								onlinePlayers[winUid]->set_points(points - 10);
+								onlinePlayers[winUid]->set_points(points + 10);
 								points = onlinePlayers[allFd[anotherFd]]->points();
-								onlinePlayers[allFd[anotherFd]]->set_points(points + 10);
+								onlinePlayers[allFd[anotherFd]]->set_points(points - 10);
+								updateList(*onlinePlayers[winUid]);
+								updateList(*onlinePlayers[allFd[anotherFd]]);
 							}
 
 							pthread_mutex_unlock(&mutex);
@@ -1450,6 +1458,9 @@ void* workThread(void *arg){
 							onlinePlayers[uid]->set_points(points - 10);
 							points = onlinePlayers[allFd[anotherFd]]->points();
 							onlinePlayers[allFd[anotherFd]]->set_points(points + 10);
+
+							updateList(*onlinePlayers[uid]);
+							updateList(*onlinePlayers[allFd[anotherFd]]);
 						}
 
 						pthread_mutex_unlock(&mutex);
@@ -1665,10 +1676,10 @@ void* workThread(void *arg){
 								onlinePlayers[uid]->set_points(points - 10);
 								points = onlinePlayers[allFd[anotherFd]]->points();
 								onlinePlayers[allFd[anotherFd]]->set_points(points + 10);
-
+								updateList(*onlinePlayers[uid]);
+								updateList(*onlinePlayers[allFd[anotherFd]]);
 								pthread_mutex_unlock(&mutex);
 							}
-
 						}
 						else{
 							//不在游戏中
@@ -2071,4 +2082,43 @@ void* rankMatchThread(void *arg){
 	}
 	pthread_mutex_unlock(&mutex);
 	return nullptr;
+}
+
+
+void initRList(){
+	//设置排名缓存 查询前100名
+	UserDao userDao;
+	RList = userDao.querySomeUser(connectionPool, 100, 10000);
+}
+
+bool compare(GoBang::Player &x, GoBang::Player &y){
+	return x.points() > y.points();
+}
+
+void updateList(const GoBang::Player p){
+	bool flag = false;
+	for(auto &it : RList){
+		if(it.uid() == p.uid()){
+			it.set_points(p.points());
+			flag = true;
+			break;
+		}
+	}
+
+	if(flag == false){
+		//不再当前 前100名中
+		if(RList.size() < 100){
+			//前100名没有满
+			RList.push_back(p);
+		}
+		else if(RList.size() == 100){
+			//前100名满了 和 分数最小的比较 如果超过了 将它替换下来
+			if(RList.back().points() < p.points()){
+				RList.pop_back();
+				RList.push_back(p);
+			}
+		}
+
+	}
+	std::sort(RList.begin(), RList.end(), compare);
 }

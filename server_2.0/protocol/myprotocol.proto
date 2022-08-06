@@ -105,7 +105,7 @@ message RegisterResponse{
 }
 
 //RANK_LIST 建议进行分页查询
-//start 表示从多少分开始   cnt表示查询多少个 最大查询20个
+//start 表示从第几名开始开始   cnt表示查询多少个 最大查询100个 总排名最多100
 message RankListRequest{
     int32 start = 1;
     int32 cnt = 2;

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'gameinterface.ui'
 **
-** Created by: Qt User Interface Compiler version 5.15.4
+** Created by: Qt User Interface Compiler version 5.15.5
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -29,17 +29,17 @@ public:
     QPushButton *pushButton_back;
     QPushButton *pushButton_draw;
     QPushButton *pushButton_surrend;
-    QLabel *image_player;
+    QLabel *image_me;
     QLabel *image_competitor;
     QLabel *nickname_player;
     QLabel *nickname_competitor;
-    QLabel *msg_player;
-    QLabel *msg_competitor;
+    QLabel *lable_me_turn;
+    QLabel *lable_competitor_turn;
     QListWidget *msg_list;
-    QLineEdit *lineEdit;
+    QLineEdit *lineEdit_msg;
     QPushButton *pushButton;
-    QLabel *label;
-    QLabel *label_2;
+    QLabel *label_msg;
+    QLabel *label_rid;
     QMenuBar *menubar;
     QStatusBar *statusbar;
 
@@ -61,47 +61,50 @@ public:
         pushButton_surrend = new QPushButton(centralwidget);
         pushButton_surrend->setObjectName(QString::fromUtf8("pushButton_surrend"));
         pushButton_surrend->setGeometry(QRect(720, 490, 91, 41));
-        image_player = new QLabel(centralwidget);
-        image_player->setObjectName(QString::fromUtf8("image_player"));
-        image_player->setGeometry(QRect(30, 540, 51, 51));
-        image_player->setPixmap(QPixmap(QString::fromUtf8(":/image/icons8-man-with-mustache-light-skin-tone-48.png")));
+        image_me = new QLabel(centralwidget);
+        image_me->setObjectName(QString::fromUtf8("image_me"));
+        image_me->setGeometry(QRect(30, 540, 51, 51));
+        image_me->setPixmap(QPixmap(QString::fromUtf8(":/image/avatar04.png")));
+        image_me->setScaledContents(true);
         image_competitor = new QLabel(centralwidget);
         image_competitor->setObjectName(QString::fromUtf8("image_competitor"));
         image_competitor->setGeometry(QRect(540, 20, 51, 51));
-        image_competitor->setPixmap(QPixmap(QString::fromUtf8(":/image/icons8-old-man-40.png")));
+        image_competitor->setPixmap(QPixmap(QString::fromUtf8(":/image/avatar11.png")));
+        image_competitor->setScaledContents(true);
         nickname_player = new QLabel(centralwidget);
         nickname_player->setObjectName(QString::fromUtf8("nickname_player"));
-        nickname_player->setGeometry(QRect(100, 530, 111, 31));
+        nickname_player->setGeometry(QRect(100, 530, 201, 31));
         nickname_competitor = new QLabel(centralwidget);
         nickname_competitor->setObjectName(QString::fromUtf8("nickname_competitor"));
-        nickname_competitor->setGeometry(QRect(430, 10, 111, 31));
-        msg_player = new QLabel(centralwidget);
-        msg_player->setObjectName(QString::fromUtf8("msg_player"));
-        msg_player->setGeometry(QRect(100, 560, 191, 31));
-        msg_competitor = new QLabel(centralwidget);
-        msg_competitor->setObjectName(QString::fromUtf8("msg_competitor"));
-        msg_competitor->setGeometry(QRect(430, 50, 111, 21));
+        nickname_competitor->setGeometry(QRect(360, 10, 181, 31));
+        nickname_competitor->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+        lable_me_turn = new QLabel(centralwidget);
+        lable_me_turn->setObjectName(QString::fromUtf8("lable_me_turn"));
+        lable_me_turn->setGeometry(QRect(100, 560, 201, 31));
+        lable_competitor_turn = new QLabel(centralwidget);
+        lable_competitor_turn->setObjectName(QString::fromUtf8("lable_competitor_turn"));
+        lable_competitor_turn->setGeometry(QRect(430, 50, 111, 21));
         msg_list = new QListWidget(centralwidget);
         msg_list->setObjectName(QString::fromUtf8("msg_list"));
         msg_list->setGeometry(QRect(540, 140, 251, 281));
         QFont font;
         font.setPointSize(6);
         msg_list->setFont(font);
-        lineEdit = new QLineEdit(centralwidget);
-        lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
-        lineEdit->setGeometry(QRect(540, 430, 191, 25));
+        lineEdit_msg = new QLineEdit(centralwidget);
+        lineEdit_msg->setObjectName(QString::fromUtf8("lineEdit_msg"));
+        lineEdit_msg->setGeometry(QRect(540, 430, 191, 25));
         pushButton = new QPushButton(centralwidget);
         pushButton->setObjectName(QString::fromUtf8("pushButton"));
         pushButton->setGeometry(QRect(730, 430, 61, 25));
-        label = new QLabel(centralwidget);
-        label->setObjectName(QString::fromUtf8("label"));
-        label->setGeometry(QRect(540, 100, 101, 41));
-        label_2 = new QLabel(centralwidget);
-        label_2->setObjectName(QString::fromUtf8("label_2"));
-        label_2->setGeometry(QRect(20, 10, 191, 41));
+        label_msg = new QLabel(centralwidget);
+        label_msg->setObjectName(QString::fromUtf8("label_msg"));
+        label_msg->setGeometry(QRect(540, 100, 101, 41));
+        label_rid = new QLabel(centralwidget);
+        label_rid->setObjectName(QString::fromUtf8("label_rid"));
+        label_rid->setGeometry(QRect(20, 10, 191, 41));
         QFont font1;
         font1.setPointSize(18);
-        label_2->setFont(font1);
+        label_rid->setFont(font1);
         GameInterface->setCentralWidget(centralwidget);
         menubar = new QMenuBar(GameInterface);
         menubar->setObjectName(QString::fromUtf8("menubar"));
@@ -122,16 +125,16 @@ public:
         pushButton_back->setText(QCoreApplication::translate("GameInterface", "\346\202\224\346\243\213", nullptr));
         pushButton_draw->setText(QCoreApplication::translate("GameInterface", "\346\261\202\345\222\214", nullptr));
         pushButton_surrend->setText(QCoreApplication::translate("GameInterface", "\350\256\244\350\276\223", nullptr));
-        image_player->setText(QString());
+        image_me->setText(QString());
         image_competitor->setText(QString());
         nickname_player->setText(QCoreApplication::translate("GameInterface", "\346\230\265\347\247\260", nullptr));
-        nickname_competitor->setText(QCoreApplication::translate("GameInterface", "\346\230\265\347\247\260", nullptr));
-        msg_player->setText(QCoreApplication::translate("GameInterface", "\346\255\243\345\234\250\344\270\213\346\243\213...", nullptr));
-        msg_competitor->setText(QCoreApplication::translate("GameInterface", "\346\255\243\345\234\250\344\270\213\346\243\213...", nullptr));
-        lineEdit->setPlaceholderText(QCoreApplication::translate("GameInterface", "Enter", nullptr));
+        nickname_competitor->setText(QCoreApplication::translate("GameInterface", "\347\255\211\345\276\205\347\216\251\345\256\266\350\277\233\345\205\245......", nullptr));
+        lable_me_turn->setText(QCoreApplication::translate("GameInterface", "\346\255\243\345\234\250\344\270\213\346\243\213...", nullptr));
+        lable_competitor_turn->setText(QCoreApplication::translate("GameInterface", "\346\255\243\345\234\250\344\270\213\346\243\213...", nullptr));
+        lineEdit_msg->setPlaceholderText(QCoreApplication::translate("GameInterface", "Enter", nullptr));
         pushButton->setText(QCoreApplication::translate("GameInterface", "\345\217\221\351\200\201", nullptr));
-        label->setText(QCoreApplication::translate("GameInterface", "\346\266\210\346\201\257\346\241\206", nullptr));
-        label_2->setText(QCoreApplication::translate("GameInterface", "\346\210\277\351\227\264\357\274\232", nullptr));
+        label_msg->setText(QCoreApplication::translate("GameInterface", "\346\266\210\346\201\257\346\241\206", nullptr));
+        label_rid->setText(QCoreApplication::translate("GameInterface", "\346\210\277\351\227\264\357\274\232", nullptr));
     } // retranslateUi
 
 };
