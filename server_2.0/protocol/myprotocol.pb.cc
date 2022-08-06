@@ -264,6 +264,34 @@ struct JoinRoomResponseDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 JoinRoomResponseDefaultTypeInternal _JoinRoomResponse_default_instance_;
+PROTOBUF_CONSTEXPR SomeoneJoinRoomResponse::SomeoneJoinRoomResponse(
+    ::_pbi::ConstantInitialized): _impl_{
+    /*decltype(_impl_.name_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
+  , /*decltype(_impl_.reconnect_)*/false
+  , /*decltype(_impl_._cached_size_)*/{}} {}
+struct SomeoneJoinRoomResponseDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR SomeoneJoinRoomResponseDefaultTypeInternal()
+      : _instance(::_pbi::ConstantInitialized{}) {}
+  ~SomeoneJoinRoomResponseDefaultTypeInternal() {}
+  union {
+    SomeoneJoinRoomResponse _instance;
+  };
+};
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 SomeoneJoinRoomResponseDefaultTypeInternal _SomeoneJoinRoomResponse_default_instance_;
+PROTOBUF_CONSTEXPR SomeoneDisconnectResponse::SomeoneDisconnectResponse(
+    ::_pbi::ConstantInitialized): _impl_{
+    /*decltype(_impl_.uid_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
+  , /*decltype(_impl_.name_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
+  , /*decltype(_impl_._cached_size_)*/{}} {}
+struct SomeoneDisconnectResponseDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR SomeoneDisconnectResponseDefaultTypeInternal()
+      : _instance(::_pbi::ConstantInitialized{}) {}
+  ~SomeoneDisconnectResponseDefaultTypeInternal() {}
+  union {
+    SomeoneDisconnectResponse _instance;
+  };
+};
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 SomeoneDisconnectResponseDefaultTypeInternal _SomeoneDisconnectResponse_default_instance_;
 PROTOBUF_CONSTEXPR Piece::Piece(
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_.x_)*/0
@@ -533,7 +561,7 @@ struct GoBangResponseDefaultTypeInternal {
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 GoBangResponseDefaultTypeInternal _GoBangResponse_default_instance_;
 }  // namespace GoBang
-static ::_pb::Metadata file_level_metadata_myprotocol_2eproto[35];
+static ::_pb::Metadata file_level_metadata_myprotocol_2eproto[37];
 static const ::_pb::EnumDescriptor* file_level_enum_descriptors_myprotocol_2eproto[2];
 static constexpr ::_pb::ServiceDescriptor const** file_level_service_descriptors_myprotocol_2eproto = nullptr;
 
@@ -679,6 +707,22 @@ const uint32_t TableStruct_myprotocol_2eproto::offsets[] PROTOBUF_SECTION_VARIAB
   PROTOBUF_FIELD_OFFSET(::GoBang::JoinRoomResponse, _impl_.success_),
   PROTOBUF_FIELD_OFFSET(::GoBang::JoinRoomResponse, _impl_.msg_),
   PROTOBUF_FIELD_OFFSET(::GoBang::JoinRoomResponse, _impl_.rid_),
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::GoBang::SomeoneJoinRoomResponse, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  ~0u,  // no _inlined_string_donated_
+  PROTOBUF_FIELD_OFFSET(::GoBang::SomeoneJoinRoomResponse, _impl_.reconnect_),
+  PROTOBUF_FIELD_OFFSET(::GoBang::SomeoneJoinRoomResponse, _impl_.name_),
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::GoBang::SomeoneDisconnectResponse, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  ~0u,  // no _inlined_string_donated_
+  PROTOBUF_FIELD_OFFSET(::GoBang::SomeoneDisconnectResponse, _impl_.uid_),
+  PROTOBUF_FIELD_OFFSET(::GoBang::SomeoneDisconnectResponse, _impl_.name_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::GoBang::Piece, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -872,6 +916,8 @@ const uint32_t TableStruct_myprotocol_2eproto::offsets[] PROTOBUF_SECTION_VARIAB
   ::_pbi::kInvalidFieldOffsetTag,
   ::_pbi::kInvalidFieldOffsetTag,
   ::_pbi::kInvalidFieldOffsetTag,
+  ::_pbi::kInvalidFieldOffsetTag,
+  ::_pbi::kInvalidFieldOffsetTag,
   PROTOBUF_FIELD_OFFSET(::GoBang::GoBangResponse, _impl_.response_),
 };
 static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
@@ -892,24 +938,26 @@ static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protode
   { 115, -1, -1, sizeof(::GoBang::CreateRoomResponse)},
   { 124, -1, -1, sizeof(::GoBang::JoinRoomRequest)},
   { 132, -1, -1, sizeof(::GoBang::JoinRoomResponse)},
-  { 141, -1, -1, sizeof(::GoBang::Piece)},
-  { 150, -1, -1, sizeof(::GoBang::Border)},
-  { 164, -1, -1, sizeof(::GoBang::SetPieceRequest)},
-  { 172, -1, -1, sizeof(::GoBang::SetPieceResponse)},
-  { 182, -1, -1, sizeof(::GoBang::UndoRequest)},
-  { 190, -1, -1, sizeof(::GoBang::UndoResponse)},
-  { 199, -1, -1, sizeof(::GoBang::TieRequest)},
-  { 207, -1, -1, sizeof(::GoBang::TieResponse)},
-  { 216, -1, -1, sizeof(::GoBang::SurrenderRequest)},
-  { 224, -1, -1, sizeof(::GoBang::Messg)},
-  { 234, -1, -1, sizeof(::GoBang::ContinueGameRequest)},
-  { 242, -1, -1, sizeof(::GoBang::ContinueGameResponse)},
-  { 248, -1, -1, sizeof(::GoBang::QuitRoomRequest)},
-  { 256, -1, -1, sizeof(::GoBang::QuitRoomResponse)},
-  { 264, -1, -1, sizeof(::GoBang::GameStart)},
-  { 275, -1, -1, sizeof(::GoBang::GameOver)},
-  { 284, -1, -1, sizeof(::GoBang::GoBangRequest)},
-  { 309, -1, -1, sizeof(::GoBang::GoBangResponse)},
+  { 141, -1, -1, sizeof(::GoBang::SomeoneJoinRoomResponse)},
+  { 149, -1, -1, sizeof(::GoBang::SomeoneDisconnectResponse)},
+  { 157, -1, -1, sizeof(::GoBang::Piece)},
+  { 166, -1, -1, sizeof(::GoBang::Border)},
+  { 180, -1, -1, sizeof(::GoBang::SetPieceRequest)},
+  { 188, -1, -1, sizeof(::GoBang::SetPieceResponse)},
+  { 198, -1, -1, sizeof(::GoBang::UndoRequest)},
+  { 206, -1, -1, sizeof(::GoBang::UndoResponse)},
+  { 215, -1, -1, sizeof(::GoBang::TieRequest)},
+  { 223, -1, -1, sizeof(::GoBang::TieResponse)},
+  { 232, -1, -1, sizeof(::GoBang::SurrenderRequest)},
+  { 240, -1, -1, sizeof(::GoBang::Messg)},
+  { 250, -1, -1, sizeof(::GoBang::ContinueGameRequest)},
+  { 258, -1, -1, sizeof(::GoBang::ContinueGameResponse)},
+  { 264, -1, -1, sizeof(::GoBang::QuitRoomRequest)},
+  { 272, -1, -1, sizeof(::GoBang::QuitRoomResponse)},
+  { 280, -1, -1, sizeof(::GoBang::GameStart)},
+  { 291, -1, -1, sizeof(::GoBang::GameOver)},
+  { 300, -1, -1, sizeof(::GoBang::GoBangRequest)},
+  { 325, -1, -1, sizeof(::GoBang::GoBangResponse)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
@@ -930,6 +978,8 @@ static const ::_pb::Message* const file_default_instances[] = {
   &::GoBang::_CreateRoomResponse_default_instance_._instance,
   &::GoBang::_JoinRoomRequest_default_instance_._instance,
   &::GoBang::_JoinRoomResponse_default_instance_._instance,
+  &::GoBang::_SomeoneJoinRoomResponse_default_instance_._instance,
+  &::GoBang::_SomeoneDisconnectResponse_default_instance_._instance,
   &::GoBang::_Piece_default_instance_._instance,
   &::GoBang::_Border_default_instance_._instance,
   &::GoBang::_SetPieceRequest_default_instance_._instance,
@@ -974,91 +1024,99 @@ const char descriptor_table_protodef_myprotocol_2eproto[] PROTOBUF_SECTION_VARIA
   "onse\022\017\n\007success\030\001 \001(\010\022\013\n\003msg\030\002 \001(\t\022\013\n\003ri"
   "d\030\003 \001(\t\"+\n\017JoinRoomRequest\022\013\n\003uid\030\001 \001(\t\022"
   "\013\n\003rid\030\002 \001(\t\"=\n\020JoinRoomResponse\022\017\n\007succ"
-  "ess\030\001 \001(\010\022\013\n\003msg\030\002 \001(\t\022\013\n\003rid\030\003 \001(\t\"@\n\005P"
-  "iece\022\t\n\001x\030\001 \001(\005\022\t\n\001y\030\002 \001(\005\022!\n\005color\030\003 \001("
-  "\0162\022.GoBang.PieceColor\"\204\001\n\006Border\022\r\n\005row_"
-  "2\030\001 \001(\020\022\r\n\005row_4\030\002 \001(\020\022\r\n\005row_6\030\003 \001(\020\022\r\n"
-  "\005row_8\030\004 \001(\020\022\016\n\006row_10\030\005 \001(\020\022\016\n\006row_12\030\006"
-  " \001(\020\022\016\n\006row_14\030\007 \001(\020\022\016\n\006row_16\030\010 \001(\020\"8\n\017"
-  "SetPieceRequest\022\030\n\001p\030\001 \001(\0132\r.GoBang.Piec"
-  "e\022\013\n\003rid\030\002 \001(\t\"m\n\020SetPieceResponse\022\017\n\007su"
-  "ccess\030\001 \001(\010\022 \n\004next\030\004 \001(\0162\022.GoBang.Piece"
-  "Color\022\013\n\003msg\030\002 \001(\t\022\031\n\001b\030\003 \001(\0132\016.GoBang.B"
-  "order\"\'\n\013UndoRequest\022\013\n\003uid\030\001 \001(\t\022\013\n\003rid"
-  "\030\002 \001(\t\"9\n\014UndoResponse\022\017\n\007success\030\001 \001(\010\022"
-  "\013\n\003uid\030\002 \001(\t\022\013\n\003rid\030\003 \001(\t\"&\n\nTieRequest\022"
-  "\013\n\003uid\030\001 \001(\t\022\013\n\003rid\030\002 \001(\t\"8\n\013TieResponse"
-  "\022\017\n\007success\030\001 \001(\010\022\013\n\003uid\030\002 \001(\t\022\013\n\003rid\030\003 "
-  "\001(\t\",\n\020SurrenderRequest\022\013\n\003uid\030\001 \001(\t\022\013\n\003"
-  "rid\030\002 \001(\t\"<\n\005Messg\022\014\n\004name\030\001 \001(\t\022\013\n\003msg\030"
-  "\002 \001(\t\022\013\n\003rid\030\003 \001(\t\022\013\n\003uid\030\004 \001(\t\"/\n\023Conti"
-  "nueGameRequest\022\013\n\003uid\030\001 \001(\t\022\013\n\003rid\030\002 \001(\t"
-  "\"\026\n\024ContinueGameResponse\"+\n\017QuitRoomRequ"
-  "est\022\013\n\003uid\030\001 \001(\t\022\013\n\003rid\030\002 \001(\t\"-\n\020QuitRoo"
-  "mResponse\022\013\n\003uid\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\"\230\001\n"
-  "\tGameStart\022#\n\007myColor\030\001 \001(\0162\022.GoBang.Pie"
-  "ceColor\022+\n\017competitorColor\030\002 \001(\0162\022.GoBan"
-  "g.PieceColor\022\026\n\016competitorName\030\003 \001(\t\022\024\n\014"
-  "competitorID\030\004 \001(\t\022\013\n\003rid\030\005 \001(\t\"6\n\010GameO"
-  "ver\022\r\n\005isWin\030\001 \001(\010\022\016\n\006winUid\030\002 \001(\t\022\013\n\003ms"
-  "g\030\003 \001(\t\"\316\006\n\rGoBangRequest\022\032\n\004type\030\001 \001(\0162"
-  "\014.GoBang.TYPE\022(\n\010loginReq\030\002 \001(\0132\024.GoBang"
-  ".LoginRequestH\000\022.\n\013RegisterReq\030\003 \001(\0132\027.G"
-  "oBang.RegisterRequestH\000\022.\n\013rankListReq\030\004"
-  " \001(\0132\027.GoBang.RankListRequestH\000\0222\n\rcreat"
-  "eRoomReq\030\005 \001(\0132\031.GoBang.CreateRoomReques"
-  "tH\000\022.\n\013setPieceReq\030\006 \001(\0132\027.GoBang.SetPie"
-  "ceRequestH\000\022&\n\007undoReq\030\007 \001(\0132\023.GoBang.Un"
-  "doRequestH\000\022(\n\010undoResp\030\017 \001(\0132\024.GoBang.U"
-  "ndoResponseH\000\022$\n\006tieReq\030\010 \001(\0132\022.GoBang.T"
-  "ieRequestH\000\022&\n\007tieResp\030\016 \001(\0132\023.GoBang.Ti"
-  "eResponseH\000\0220\n\014surrenderReq\030\t \001(\0132\030.GoBa"
-  "ng.SurrenderRequestH\000\022\036\n\005messg\030\n \001(\0132\r.G"
-  "oBang.MessgH\000\0226\n\017continueGameReq\030\013 \001(\0132\033"
-  ".GoBang.ContinueGameRequestH\000\022.\n\013quitRoo"
-  "mReq\030\014 \001(\0132\027.GoBang.QuitRoomRequestH\000\0224\n"
-  "\016normalMatchReq\030\r \001(\0132\032.GoBang.NormalMat"
-  "chRequestH\000\0220\n\014rankMatchReq\030\020 \001(\0132\030.GoBa"
-  "ng.RankMatchRequestH\000\022.\n\013joinRoomReq\030\021 \001"
-  "(\0132\027.GoBang.JoinRoomRequestH\000\0226\n\016playMes"
-  "sageReq\030\022 \001(\0132\034.GoBang.PlayerMessageRequ"
-  "estH\000B\t\n\007request\"\202\007\n\016GoBangResponse\022\032\n\004t"
-  "ype\030\001 \001(\0162\014.GoBang.TYPE\022*\n\tloginResp\030\002 \001"
-  "(\0132\025.GoBang.LoginResponseH\000\0220\n\014registerR"
-  "esp\030\003 \001(\0132\030.GoBang.RegisterResponseH\000\0220\n"
-  "\014rankListResp\030\004 \001(\0132\030.GoBang.RankListRes"
-  "ponseH\000\0224\n\016createRoomResp\030\005 \001(\0132\032.GoBang"
-  ".CreateRoomResponseH\000\0220\n\014setPieceResp\030\006 "
-  "\001(\0132\030.GoBang.SetPieceResponseH\000\022(\n\010undoR"
-  "esp\030\007 \001(\0132\024.GoBang.UndoResponseH\000\022&\n\007tie"
-  "Resp\030\010 \001(\0132\023.GoBang.TieResponseH\000\022&\n\007und"
-  "oReq\030\021 \001(\0132\023.GoBang.UndoRequestH\000\022$\n\006tie"
-  "Res\030\022 \001(\0132\022.GoBang.TieRequestH\000\022\036\n\005messg"
-  "\030\n \001(\0132\r.GoBang.MessgH\000\0228\n\020continueGameR"
-  "esp\030\013 \001(\0132\034.GoBang.ContinueGameResponseH"
-  "\000\0220\n\014quitRoomResp\030\014 \001(\0132\030.GoBang.QuitRoo"
-  "mResponseH\000\022&\n\tgameStart\030\r \001(\0132\021.GoBang."
-  "GameStartH\000\022$\n\010gameOver\030\016 \001(\0132\020.GoBang.G"
-  "ameOverH\000\0226\n\017normalMatchResp\030\017 \001(\0132\033.GoB"
-  "ang.NormalMatchResponseH\000\0222\n\rrankMatchRe"
-  "sp\030\020 \001(\0132\031.GoBang.RankMatchResponseH\000\0220\n"
-  "\014joinRoomResp\030\t \001(\0132\030.GoBang.JoinRoomRes"
-  "ponseH\000\0228\n\017playMessageResp\030\023 \001(\0132\035.GoBan"
-  "g.PlayerMessageResponseH\000B\n\n\010response*\375\001"
-  "\n\004TYPE\022\t\n\005LOGIN\020\000\022\014\n\010REGISTER\020\001\022\r\n\tRANK_"
-  "LIST\020\002\022\020\n\014NORMAL_MATCH\020\003\022\016\n\nRANK_MATCH\020\004"
-  "\022\017\n\013CREATE_ROOM\020\005\022\r\n\tJOIN_ROOM\020\006\022\r\n\tSET_"
-  "PIECE\020\007\022\010\n\004UNDO\020\010\022\007\n\003TIE\020\t\022\r\n\tSURRENDER\020"
-  "\n\022\007\n\003MSG\020\013\022\021\n\rCONTINUE_GAME\020\014\022\r\n\tQUIT_RO"
-  "OM\020\r\022\r\n\tGAMESTART\020\017\022\014\n\010GAMEOVER\020\016\022\022\n\016PLA"
-  "YER_MESSAGE\020\020*0\n\nPieceColor\022\014\n\010NO_PIECE\020"
-  "\000\022\t\n\005BLACK\020\002\022\t\n\005WHITE\020\003b\006proto3"
+  "ess\030\001 \001(\010\022\013\n\003msg\030\002 \001(\t\022\013\n\003rid\030\003 \001(\t\":\n\027S"
+  "omeoneJoinRoomResponse\022\021\n\treconnect\030\001 \001("
+  "\010\022\014\n\004name\030\002 \001(\t\"6\n\031SomeoneDisconnectResp"
+  "onse\022\013\n\003uid\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\"@\n\005Piece"
+  "\022\t\n\001x\030\001 \001(\005\022\t\n\001y\030\002 \001(\005\022!\n\005color\030\003 \001(\0162\022."
+  "GoBang.PieceColor\"\204\001\n\006Border\022\r\n\005row_2\030\001 "
+  "\001(\020\022\r\n\005row_4\030\002 \001(\020\022\r\n\005row_6\030\003 \001(\020\022\r\n\005row"
+  "_8\030\004 \001(\020\022\016\n\006row_10\030\005 \001(\020\022\016\n\006row_12\030\006 \001(\020"
+  "\022\016\n\006row_14\030\007 \001(\020\022\016\n\006row_16\030\010 \001(\020\"8\n\017SetP"
+  "ieceRequest\022\030\n\001p\030\001 \001(\0132\r.GoBang.Piece\022\013\n"
+  "\003rid\030\002 \001(\t\"m\n\020SetPieceResponse\022\017\n\007succes"
+  "s\030\001 \001(\010\022 \n\004next\030\004 \001(\0162\022.GoBang.PieceColo"
+  "r\022\013\n\003msg\030\002 \001(\t\022\031\n\001b\030\003 \001(\0132\016.GoBang.Borde"
+  "r\"\'\n\013UndoRequest\022\013\n\003uid\030\001 \001(\t\022\013\n\003rid\030\002 \001"
+  "(\t\"9\n\014UndoResponse\022\017\n\007success\030\001 \001(\010\022\013\n\003u"
+  "id\030\002 \001(\t\022\013\n\003rid\030\003 \001(\t\"&\n\nTieRequest\022\013\n\003u"
+  "id\030\001 \001(\t\022\013\n\003rid\030\002 \001(\t\"8\n\013TieResponse\022\017\n\007"
+  "success\030\001 \001(\010\022\013\n\003uid\030\002 \001(\t\022\013\n\003rid\030\003 \001(\t\""
+  ",\n\020SurrenderRequest\022\013\n\003uid\030\001 \001(\t\022\013\n\003rid\030"
+  "\002 \001(\t\"<\n\005Messg\022\014\n\004name\030\001 \001(\t\022\013\n\003msg\030\002 \001("
+  "\t\022\013\n\003rid\030\003 \001(\t\022\013\n\003uid\030\004 \001(\t\"/\n\023ContinueG"
+  "ameRequest\022\013\n\003uid\030\001 \001(\t\022\013\n\003rid\030\002 \001(\t\"\026\n\024"
+  "ContinueGameResponse\"+\n\017QuitRoomRequest\022"
+  "\013\n\003uid\030\001 \001(\t\022\013\n\003rid\030\002 \001(\t\"-\n\020QuitRoomRes"
+  "ponse\022\013\n\003uid\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\"\230\001\n\tGam"
+  "eStart\022#\n\007myColor\030\001 \001(\0162\022.GoBang.PieceCo"
+  "lor\022+\n\017competitorColor\030\002 \001(\0162\022.GoBang.Pi"
+  "eceColor\022\026\n\016competitorName\030\003 \001(\t\022\024\n\014comp"
+  "etitorID\030\004 \001(\t\022\013\n\003rid\030\005 \001(\t\"6\n\010GameOver\022"
+  "\r\n\005isWin\030\001 \001(\010\022\016\n\006winUid\030\002 \001(\t\022\013\n\003msg\030\003 "
+  "\001(\t\"\316\006\n\rGoBangRequest\022\032\n\004type\030\001 \001(\0162\014.Go"
+  "Bang.TYPE\022(\n\010loginReq\030\002 \001(\0132\024.GoBang.Log"
+  "inRequestH\000\022.\n\013RegisterReq\030\003 \001(\0132\027.GoBan"
+  "g.RegisterRequestH\000\022.\n\013rankListReq\030\004 \001(\013"
+  "2\027.GoBang.RankListRequestH\000\0222\n\rcreateRoo"
+  "mReq\030\005 \001(\0132\031.GoBang.CreateRoomRequestH\000\022"
+  ".\n\013setPieceReq\030\006 \001(\0132\027.GoBang.SetPieceRe"
+  "questH\000\022&\n\007undoReq\030\007 \001(\0132\023.GoBang.UndoRe"
+  "questH\000\022(\n\010undoResp\030\017 \001(\0132\024.GoBang.UndoR"
+  "esponseH\000\022$\n\006tieReq\030\010 \001(\0132\022.GoBang.TieRe"
+  "questH\000\022&\n\007tieResp\030\016 \001(\0132\023.GoBang.TieRes"
+  "ponseH\000\0220\n\014surrenderReq\030\t \001(\0132\030.GoBang.S"
+  "urrenderRequestH\000\022\036\n\005messg\030\n \001(\0132\r.GoBan"
+  "g.MessgH\000\0226\n\017continueGameReq\030\013 \001(\0132\033.GoB"
+  "ang.ContinueGameRequestH\000\022.\n\013quitRoomReq"
+  "\030\014 \001(\0132\027.GoBang.QuitRoomRequestH\000\0224\n\016nor"
+  "malMatchReq\030\r \001(\0132\032.GoBang.NormalMatchRe"
+  "questH\000\0220\n\014rankMatchReq\030\020 \001(\0132\030.GoBang.R"
+  "ankMatchRequestH\000\022.\n\013joinRoomReq\030\021 \001(\0132\027"
+  ".GoBang.JoinRoomRequestH\000\0226\n\016playMessage"
+  "Req\030\022 \001(\0132\034.GoBang.PlayerMessageRequestH"
+  "\000B\t\n\007request\"\206\010\n\016GoBangResponse\022\032\n\004type\030"
+  "\001 \001(\0162\014.GoBang.TYPE\022*\n\tloginResp\030\002 \001(\0132\025"
+  ".GoBang.LoginResponseH\000\0220\n\014registerResp\030"
+  "\003 \001(\0132\030.GoBang.RegisterResponseH\000\0220\n\014ran"
+  "kListResp\030\004 \001(\0132\030.GoBang.RankListRespons"
+  "eH\000\0224\n\016createRoomResp\030\005 \001(\0132\032.GoBang.Cre"
+  "ateRoomResponseH\000\0220\n\014setPieceResp\030\006 \001(\0132"
+  "\030.GoBang.SetPieceResponseH\000\022(\n\010undoResp\030"
+  "\007 \001(\0132\024.GoBang.UndoResponseH\000\022&\n\007tieResp"
+  "\030\010 \001(\0132\023.GoBang.TieResponseH\000\022&\n\007undoReq"
+  "\030\021 \001(\0132\023.GoBang.UndoRequestH\000\022$\n\006tieRes\030"
+  "\022 \001(\0132\022.GoBang.TieRequestH\000\022\036\n\005messg\030\n \001"
+  "(\0132\r.GoBang.MessgH\000\0228\n\020continueGameResp\030"
+  "\013 \001(\0132\034.GoBang.ContinueGameResponseH\000\0220\n"
+  "\014quitRoomResp\030\014 \001(\0132\030.GoBang.QuitRoomRes"
+  "ponseH\000\022&\n\tgameStart\030\r \001(\0132\021.GoBang.Game"
+  "StartH\000\022$\n\010gameOver\030\016 \001(\0132\020.GoBang.GameO"
+  "verH\000\0226\n\017normalMatchResp\030\017 \001(\0132\033.GoBang."
+  "NormalMatchResponseH\000\0222\n\rrankMatchResp\030\020"
+  " \001(\0132\031.GoBang.RankMatchResponseH\000\0220\n\014joi"
+  "nRoomResp\030\t \001(\0132\030.GoBang.JoinRoomRespons"
+  "eH\000\0228\n\017playMessageResp\030\023 \001(\0132\035.GoBang.Pl"
+  "ayerMessageResponseH\000\022>\n\023someoneJoinRoom"
+  "Resp\030\024 \001(\0132\037.GoBang.SomeoneJoinRoomRespo"
+  "nseH\000\022B\n\025someoneDisconnectResp\030\025 \001(\0132!.G"
+  "oBang.SomeoneDisconnectResponseH\000B\n\n\010res"
+  "ponse*\254\002\n\004TYPE\022\t\n\005LOGIN\020\000\022\014\n\010REGISTER\020\001\022"
+  "\r\n\tRANK_LIST\020\002\022\020\n\014NORMAL_MATCH\020\003\022\016\n\nRANK"
+  "_MATCH\020\004\022\017\n\013CREATE_ROOM\020\005\022\r\n\tJOIN_ROOM\020\006"
+  "\022\r\n\tSET_PIECE\020\007\022\010\n\004UNDO\020\010\022\007\n\003TIE\020\t\022\r\n\tSU"
+  "RRENDER\020\n\022\007\n\003MSG\020\013\022\021\n\rCONTINUE_GAME\020\014\022\r\n"
+  "\tQUIT_ROOM\020\r\022\r\n\tGAMESTART\020\017\022\014\n\010GAMEOVER\020"
+  "\016\022\022\n\016PLAYER_MESSAGE\020\020\022\025\n\021SOMEONE_JOIN_RO"
+  "OM\020\021\022\026\n\022SOMEONE_DISCONNECT\020\022*0\n\nPieceCol"
+  "or\022\014\n\010NO_PIECE\020\000\022\t\n\005BLACK\020\002\022\t\n\005WHITE\020\003b\006"
+  "proto3"
   ;
 static ::_pbi::once_flag descriptor_table_myprotocol_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_myprotocol_2eproto = {
-    false, false, 4071, descriptor_table_protodef_myprotocol_2eproto,
+    false, false, 4366, descriptor_table_protodef_myprotocol_2eproto,
     "myprotocol.proto",
-    &descriptor_table_myprotocol_2eproto_once, nullptr, 0, 35,
+    &descriptor_table_myprotocol_2eproto_once, nullptr, 0, 37,
     schemas, file_default_instances, TableStruct_myprotocol_2eproto::offsets,
     file_level_metadata_myprotocol_2eproto, file_level_enum_descriptors_myprotocol_2eproto,
     file_level_service_descriptors_myprotocol_2eproto,
@@ -1093,6 +1151,8 @@ bool TYPE_IsValid(int value) {
     case 14:
     case 15:
     case 16:
+    case 17:
+    case 18:
       return true;
     default:
       return false;
@@ -5373,6 +5433,489 @@ void JoinRoomResponse::InternalSwap(JoinRoomResponse* other) {
 
 // ===================================================================
 
+class SomeoneJoinRoomResponse::_Internal {
+ public:
+};
+
+SomeoneJoinRoomResponse::SomeoneJoinRoomResponse(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
+  SharedCtor(arena, is_message_owned);
+  // @@protoc_insertion_point(arena_constructor:GoBang.SomeoneJoinRoomResponse)
+}
+SomeoneJoinRoomResponse::SomeoneJoinRoomResponse(const SomeoneJoinRoomResponse& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  SomeoneJoinRoomResponse* const _this = this; (void)_this;
+  new (&_impl_) Impl_{
+      decltype(_impl_.name_){}
+    , decltype(_impl_.reconnect_){}
+    , /*decltype(_impl_._cached_size_)*/{}};
+
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _impl_.name_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.name_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (!from._internal_name().empty()) {
+    _this->_impl_.name_.Set(from._internal_name(), 
+      _this->GetArenaForAllocation());
+  }
+  _this->_impl_.reconnect_ = from._impl_.reconnect_;
+  // @@protoc_insertion_point(copy_constructor:GoBang.SomeoneJoinRoomResponse)
+}
+
+inline void SomeoneJoinRoomResponse::SharedCtor(
+    ::_pb::Arena* arena, bool is_message_owned) {
+  (void)arena;
+  (void)is_message_owned;
+  new (&_impl_) Impl_{
+      decltype(_impl_.name_){}
+    , decltype(_impl_.reconnect_){false}
+    , /*decltype(_impl_._cached_size_)*/{}
+  };
+  _impl_.name_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.name_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+}
+
+SomeoneJoinRoomResponse::~SomeoneJoinRoomResponse() {
+  // @@protoc_insertion_point(destructor:GoBang.SomeoneJoinRoomResponse)
+  if (auto *arena = _internal_metadata_.DeleteReturnArena<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>()) {
+  (void)arena;
+    return;
+  }
+  SharedDtor();
+}
+
+inline void SomeoneJoinRoomResponse::SharedDtor() {
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  _impl_.name_.Destroy();
+}
+
+void SomeoneJoinRoomResponse::SetCachedSize(int size) const {
+  _impl_._cached_size_.Set(size);
+}
+
+void SomeoneJoinRoomResponse::Clear() {
+// @@protoc_insertion_point(message_clear_start:GoBang.SomeoneJoinRoomResponse)
+  uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_.name_.ClearToEmpty();
+  _impl_.reconnect_ = false;
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* SomeoneJoinRoomResponse::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    uint32_t tag;
+    ptr = ::_pbi::ReadTag(ptr, &tag);
+    switch (tag >> 3) {
+      // bool reconnect = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 8)) {
+          _impl_.reconnect_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // string name = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 18)) {
+          auto str = _internal_mutable_name();
+          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(ptr);
+          CHK_(::_pbi::VerifyUTF8(str, "GoBang.SomeoneJoinRoomResponse.name"));
+        } else
+          goto handle_unusual;
+        continue;
+      default:
+        goto handle_unusual;
+    }  // switch
+  handle_unusual:
+    if ((tag == 0) || ((tag & 7) == 4)) {
+      CHK_(ptr);
+      ctx->SetLastTag(tag);
+      goto message_done;
+    }
+    ptr = UnknownFieldParse(
+        tag,
+        _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+        ptr, ctx);
+    CHK_(ptr != nullptr);
+  }  // while
+message_done:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto message_done;
+#undef CHK_
+}
+
+uint8_t* SomeoneJoinRoomResponse::_InternalSerialize(
+    uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:GoBang.SomeoneJoinRoomResponse)
+  uint32_t cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // bool reconnect = 1;
+  if (this->_internal_reconnect() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(1, this->_internal_reconnect(), target);
+  }
+
+  // string name = 2;
+  if (!this->_internal_name().empty()) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_name().data(), static_cast<int>(this->_internal_name().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "GoBang.SomeoneJoinRoomResponse.name");
+    target = stream->WriteStringMaybeAliased(
+        2, this->_internal_name(), target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:GoBang.SomeoneJoinRoomResponse)
+  return target;
+}
+
+size_t SomeoneJoinRoomResponse::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:GoBang.SomeoneJoinRoomResponse)
+  size_t total_size = 0;
+
+  uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // string name = 2;
+  if (!this->_internal_name().empty()) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_name());
+  }
+
+  // bool reconnect = 1;
+  if (this->_internal_reconnect() != 0) {
+    total_size += 1 + 1;
+  }
+
+  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
+}
+
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData SomeoneJoinRoomResponse::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
+    SomeoneJoinRoomResponse::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*SomeoneJoinRoomResponse::GetClassData() const { return &_class_data_; }
+
+
+void SomeoneJoinRoomResponse::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<SomeoneJoinRoomResponse*>(&to_msg);
+  auto& from = static_cast<const SomeoneJoinRoomResponse&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:GoBang.SomeoneJoinRoomResponse)
+  GOOGLE_DCHECK_NE(&from, _this);
+  uint32_t cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  if (!from._internal_name().empty()) {
+    _this->_internal_set_name(from._internal_name());
+  }
+  if (from._internal_reconnect() != 0) {
+    _this->_internal_set_reconnect(from._internal_reconnect());
+  }
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+}
+
+void SomeoneJoinRoomResponse::CopyFrom(const SomeoneJoinRoomResponse& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:GoBang.SomeoneJoinRoomResponse)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool SomeoneJoinRoomResponse::IsInitialized() const {
+  return true;
+}
+
+void SomeoneJoinRoomResponse::InternalSwap(SomeoneJoinRoomResponse* other) {
+  using std::swap;
+  auto* lhs_arena = GetArenaForAllocation();
+  auto* rhs_arena = other->GetArenaForAllocation();
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &_impl_.name_, lhs_arena,
+      &other->_impl_.name_, rhs_arena
+  );
+  swap(_impl_.reconnect_, other->_impl_.reconnect_);
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata SomeoneJoinRoomResponse::GetMetadata() const {
+  return ::_pbi::AssignDescriptors(
+      &descriptor_table_myprotocol_2eproto_getter, &descriptor_table_myprotocol_2eproto_once,
+      file_level_metadata_myprotocol_2eproto[17]);
+}
+
+// ===================================================================
+
+class SomeoneDisconnectResponse::_Internal {
+ public:
+};
+
+SomeoneDisconnectResponse::SomeoneDisconnectResponse(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
+  SharedCtor(arena, is_message_owned);
+  // @@protoc_insertion_point(arena_constructor:GoBang.SomeoneDisconnectResponse)
+}
+SomeoneDisconnectResponse::SomeoneDisconnectResponse(const SomeoneDisconnectResponse& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  SomeoneDisconnectResponse* const _this = this; (void)_this;
+  new (&_impl_) Impl_{
+      decltype(_impl_.uid_){}
+    , decltype(_impl_.name_){}
+    , /*decltype(_impl_._cached_size_)*/{}};
+
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _impl_.uid_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.uid_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (!from._internal_uid().empty()) {
+    _this->_impl_.uid_.Set(from._internal_uid(), 
+      _this->GetArenaForAllocation());
+  }
+  _impl_.name_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.name_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (!from._internal_name().empty()) {
+    _this->_impl_.name_.Set(from._internal_name(), 
+      _this->GetArenaForAllocation());
+  }
+  // @@protoc_insertion_point(copy_constructor:GoBang.SomeoneDisconnectResponse)
+}
+
+inline void SomeoneDisconnectResponse::SharedCtor(
+    ::_pb::Arena* arena, bool is_message_owned) {
+  (void)arena;
+  (void)is_message_owned;
+  new (&_impl_) Impl_{
+      decltype(_impl_.uid_){}
+    , decltype(_impl_.name_){}
+    , /*decltype(_impl_._cached_size_)*/{}
+  };
+  _impl_.uid_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.uid_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  _impl_.name_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.name_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+}
+
+SomeoneDisconnectResponse::~SomeoneDisconnectResponse() {
+  // @@protoc_insertion_point(destructor:GoBang.SomeoneDisconnectResponse)
+  if (auto *arena = _internal_metadata_.DeleteReturnArena<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>()) {
+  (void)arena;
+    return;
+  }
+  SharedDtor();
+}
+
+inline void SomeoneDisconnectResponse::SharedDtor() {
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  _impl_.uid_.Destroy();
+  _impl_.name_.Destroy();
+}
+
+void SomeoneDisconnectResponse::SetCachedSize(int size) const {
+  _impl_._cached_size_.Set(size);
+}
+
+void SomeoneDisconnectResponse::Clear() {
+// @@protoc_insertion_point(message_clear_start:GoBang.SomeoneDisconnectResponse)
+  uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_.uid_.ClearToEmpty();
+  _impl_.name_.ClearToEmpty();
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* SomeoneDisconnectResponse::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    uint32_t tag;
+    ptr = ::_pbi::ReadTag(ptr, &tag);
+    switch (tag >> 3) {
+      // string uid = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 10)) {
+          auto str = _internal_mutable_uid();
+          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(ptr);
+          CHK_(::_pbi::VerifyUTF8(str, "GoBang.SomeoneDisconnectResponse.uid"));
+        } else
+          goto handle_unusual;
+        continue;
+      // string name = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 18)) {
+          auto str = _internal_mutable_name();
+          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(ptr);
+          CHK_(::_pbi::VerifyUTF8(str, "GoBang.SomeoneDisconnectResponse.name"));
+        } else
+          goto handle_unusual;
+        continue;
+      default:
+        goto handle_unusual;
+    }  // switch
+  handle_unusual:
+    if ((tag == 0) || ((tag & 7) == 4)) {
+      CHK_(ptr);
+      ctx->SetLastTag(tag);
+      goto message_done;
+    }
+    ptr = UnknownFieldParse(
+        tag,
+        _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+        ptr, ctx);
+    CHK_(ptr != nullptr);
+  }  // while
+message_done:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto message_done;
+#undef CHK_
+}
+
+uint8_t* SomeoneDisconnectResponse::_InternalSerialize(
+    uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:GoBang.SomeoneDisconnectResponse)
+  uint32_t cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // string uid = 1;
+  if (!this->_internal_uid().empty()) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_uid().data(), static_cast<int>(this->_internal_uid().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "GoBang.SomeoneDisconnectResponse.uid");
+    target = stream->WriteStringMaybeAliased(
+        1, this->_internal_uid(), target);
+  }
+
+  // string name = 2;
+  if (!this->_internal_name().empty()) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_name().data(), static_cast<int>(this->_internal_name().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "GoBang.SomeoneDisconnectResponse.name");
+    target = stream->WriteStringMaybeAliased(
+        2, this->_internal_name(), target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:GoBang.SomeoneDisconnectResponse)
+  return target;
+}
+
+size_t SomeoneDisconnectResponse::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:GoBang.SomeoneDisconnectResponse)
+  size_t total_size = 0;
+
+  uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // string uid = 1;
+  if (!this->_internal_uid().empty()) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_uid());
+  }
+
+  // string name = 2;
+  if (!this->_internal_name().empty()) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_name());
+  }
+
+  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
+}
+
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData SomeoneDisconnectResponse::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
+    SomeoneDisconnectResponse::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*SomeoneDisconnectResponse::GetClassData() const { return &_class_data_; }
+
+
+void SomeoneDisconnectResponse::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<SomeoneDisconnectResponse*>(&to_msg);
+  auto& from = static_cast<const SomeoneDisconnectResponse&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:GoBang.SomeoneDisconnectResponse)
+  GOOGLE_DCHECK_NE(&from, _this);
+  uint32_t cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  if (!from._internal_uid().empty()) {
+    _this->_internal_set_uid(from._internal_uid());
+  }
+  if (!from._internal_name().empty()) {
+    _this->_internal_set_name(from._internal_name());
+  }
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+}
+
+void SomeoneDisconnectResponse::CopyFrom(const SomeoneDisconnectResponse& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:GoBang.SomeoneDisconnectResponse)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool SomeoneDisconnectResponse::IsInitialized() const {
+  return true;
+}
+
+void SomeoneDisconnectResponse::InternalSwap(SomeoneDisconnectResponse* other) {
+  using std::swap;
+  auto* lhs_arena = GetArenaForAllocation();
+  auto* rhs_arena = other->GetArenaForAllocation();
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &_impl_.uid_, lhs_arena,
+      &other->_impl_.uid_, rhs_arena
+  );
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &_impl_.name_, lhs_arena,
+      &other->_impl_.name_, rhs_arena
+  );
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata SomeoneDisconnectResponse::GetMetadata() const {
+  return ::_pbi::AssignDescriptors(
+      &descriptor_table_myprotocol_2eproto_getter, &descriptor_table_myprotocol_2eproto_once,
+      file_level_metadata_myprotocol_2eproto[18]);
+}
+
+// ===================================================================
+
 class Piece::_Internal {
  public:
 };
@@ -5606,7 +6149,7 @@ void Piece::InternalSwap(Piece* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata Piece::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_myprotocol_2eproto_getter, &descriptor_table_myprotocol_2eproto_once,
-      file_level_metadata_myprotocol_2eproto[17]);
+      file_level_metadata_myprotocol_2eproto[19]);
 }
 
 // ===================================================================
@@ -5961,7 +6504,7 @@ void Border::InternalSwap(Border* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata Border::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_myprotocol_2eproto_getter, &descriptor_table_myprotocol_2eproto_once,
-      file_level_metadata_myprotocol_2eproto[18]);
+      file_level_metadata_myprotocol_2eproto[20]);
 }
 
 // ===================================================================
@@ -6206,7 +6749,7 @@ void SetPieceRequest::InternalSwap(SetPieceRequest* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata SetPieceRequest::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_myprotocol_2eproto_getter, &descriptor_table_myprotocol_2eproto_once,
-      file_level_metadata_myprotocol_2eproto[19]);
+      file_level_metadata_myprotocol_2eproto[21]);
 }
 
 // ===================================================================
@@ -6513,7 +7056,7 @@ void SetPieceResponse::InternalSwap(SetPieceResponse* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata SetPieceResponse::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_myprotocol_2eproto_getter, &descriptor_table_myprotocol_2eproto_once,
-      file_level_metadata_myprotocol_2eproto[20]);
+      file_level_metadata_myprotocol_2eproto[22]);
 }
 
 // ===================================================================
@@ -6766,7 +7309,7 @@ void UndoRequest::InternalSwap(UndoRequest* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata UndoRequest::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_myprotocol_2eproto_getter, &descriptor_table_myprotocol_2eproto_once,
-      file_level_metadata_myprotocol_2eproto[21]);
+      file_level_metadata_myprotocol_2eproto[23]);
 }
 
 // ===================================================================
@@ -7046,7 +7589,7 @@ void UndoResponse::InternalSwap(UndoResponse* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata UndoResponse::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_myprotocol_2eproto_getter, &descriptor_table_myprotocol_2eproto_once,
-      file_level_metadata_myprotocol_2eproto[22]);
+      file_level_metadata_myprotocol_2eproto[24]);
 }
 
 // ===================================================================
@@ -7299,7 +7842,7 @@ void TieRequest::InternalSwap(TieRequest* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata TieRequest::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_myprotocol_2eproto_getter, &descriptor_table_myprotocol_2eproto_once,
-      file_level_metadata_myprotocol_2eproto[23]);
+      file_level_metadata_myprotocol_2eproto[25]);
 }
 
 // ===================================================================
@@ -7579,7 +8122,7 @@ void TieResponse::InternalSwap(TieResponse* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata TieResponse::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_myprotocol_2eproto_getter, &descriptor_table_myprotocol_2eproto_once,
-      file_level_metadata_myprotocol_2eproto[24]);
+      file_level_metadata_myprotocol_2eproto[26]);
 }
 
 // ===================================================================
@@ -7832,7 +8375,7 @@ void SurrenderRequest::InternalSwap(SurrenderRequest* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata SurrenderRequest::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_myprotocol_2eproto_getter, &descriptor_table_myprotocol_2eproto_once,
-      file_level_metadata_myprotocol_2eproto[25]);
+      file_level_metadata_myprotocol_2eproto[27]);
 }
 
 // ===================================================================
@@ -8185,7 +8728,7 @@ void Messg::InternalSwap(Messg* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata Messg::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_myprotocol_2eproto_getter, &descriptor_table_myprotocol_2eproto_once,
-      file_level_metadata_myprotocol_2eproto[26]);
+      file_level_metadata_myprotocol_2eproto[28]);
 }
 
 // ===================================================================
@@ -8438,7 +8981,7 @@ void ContinueGameRequest::InternalSwap(ContinueGameRequest* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata ContinueGameRequest::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_myprotocol_2eproto_getter, &descriptor_table_myprotocol_2eproto_once,
-      file_level_metadata_myprotocol_2eproto[27]);
+      file_level_metadata_myprotocol_2eproto[29]);
 }
 
 // ===================================================================
@@ -8478,7 +9021,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*ContinueGameResponse::GetClass
 ::PROTOBUF_NAMESPACE_ID::Metadata ContinueGameResponse::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_myprotocol_2eproto_getter, &descriptor_table_myprotocol_2eproto_once,
-      file_level_metadata_myprotocol_2eproto[28]);
+      file_level_metadata_myprotocol_2eproto[30]);
 }
 
 // ===================================================================
@@ -8731,7 +9274,7 @@ void QuitRoomRequest::InternalSwap(QuitRoomRequest* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata QuitRoomRequest::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_myprotocol_2eproto_getter, &descriptor_table_myprotocol_2eproto_once,
-      file_level_metadata_myprotocol_2eproto[29]);
+      file_level_metadata_myprotocol_2eproto[31]);
 }
 
 // ===================================================================
@@ -8984,7 +9527,7 @@ void QuitRoomResponse::InternalSwap(QuitRoomResponse* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata QuitRoomResponse::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_myprotocol_2eproto_getter, &descriptor_table_myprotocol_2eproto_once,
-      file_level_metadata_myprotocol_2eproto[30]);
+      file_level_metadata_myprotocol_2eproto[32]);
 }
 
 // ===================================================================
@@ -9353,7 +9896,7 @@ void GameStart::InternalSwap(GameStart* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata GameStart::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_myprotocol_2eproto_getter, &descriptor_table_myprotocol_2eproto_once,
-      file_level_metadata_myprotocol_2eproto[31]);
+      file_level_metadata_myprotocol_2eproto[33]);
 }
 
 // ===================================================================
@@ -9633,7 +10176,7 @@ void GameOver::InternalSwap(GameOver* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata GameOver::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_myprotocol_2eproto_getter, &descriptor_table_myprotocol_2eproto_once,
-      file_level_metadata_myprotocol_2eproto[32]);
+      file_level_metadata_myprotocol_2eproto[34]);
 }
 
 // ===================================================================
@@ -10838,7 +11381,7 @@ void GoBangRequest::InternalSwap(GoBangRequest* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata GoBangRequest::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_myprotocol_2eproto_getter, &descriptor_table_myprotocol_2eproto_once,
-      file_level_metadata_myprotocol_2eproto[33]);
+      file_level_metadata_myprotocol_2eproto[35]);
 }
 
 // ===================================================================
@@ -10863,6 +11406,8 @@ class GoBangResponse::_Internal {
   static const ::GoBang::RankMatchResponse& rankmatchresp(const GoBangResponse* msg);
   static const ::GoBang::JoinRoomResponse& joinroomresp(const GoBangResponse* msg);
   static const ::GoBang::PlayerMessageResponse& playmessageresp(const GoBangResponse* msg);
+  static const ::GoBang::SomeoneJoinRoomResponse& someonejoinroomresp(const GoBangResponse* msg);
+  static const ::GoBang::SomeoneDisconnectResponse& someonedisconnectresp(const GoBangResponse* msg);
 };
 
 const ::GoBang::LoginResponse&
@@ -10936,6 +11481,14 @@ GoBangResponse::_Internal::joinroomresp(const GoBangResponse* msg) {
 const ::GoBang::PlayerMessageResponse&
 GoBangResponse::_Internal::playmessageresp(const GoBangResponse* msg) {
   return *msg->_impl_.response_.playmessageresp_;
+}
+const ::GoBang::SomeoneJoinRoomResponse&
+GoBangResponse::_Internal::someonejoinroomresp(const GoBangResponse* msg) {
+  return *msg->_impl_.response_.someonejoinroomresp_;
+}
+const ::GoBang::SomeoneDisconnectResponse&
+GoBangResponse::_Internal::someonedisconnectresp(const GoBangResponse* msg) {
+  return *msg->_impl_.response_.someonedisconnectresp_;
 }
 void GoBangResponse::set_allocated_loginresp(::GoBang::LoginResponse* loginresp) {
   ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
@@ -11207,6 +11760,36 @@ void GoBangResponse::set_allocated_playmessageresp(::GoBang::PlayerMessageRespon
   }
   // @@protoc_insertion_point(field_set_allocated:GoBang.GoBangResponse.playMessageResp)
 }
+void GoBangResponse::set_allocated_someonejoinroomresp(::GoBang::SomeoneJoinRoomResponse* someonejoinroomresp) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
+  clear_response();
+  if (someonejoinroomresp) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+      ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(someonejoinroomresp);
+    if (message_arena != submessage_arena) {
+      someonejoinroomresp = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, someonejoinroomresp, submessage_arena);
+    }
+    set_has_someonejoinroomresp();
+    _impl_.response_.someonejoinroomresp_ = someonejoinroomresp;
+  }
+  // @@protoc_insertion_point(field_set_allocated:GoBang.GoBangResponse.someoneJoinRoomResp)
+}
+void GoBangResponse::set_allocated_someonedisconnectresp(::GoBang::SomeoneDisconnectResponse* someonedisconnectresp) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
+  clear_response();
+  if (someonedisconnectresp) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+      ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(someonedisconnectresp);
+    if (message_arena != submessage_arena) {
+      someonedisconnectresp = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, someonedisconnectresp, submessage_arena);
+    }
+    set_has_someonedisconnectresp();
+    _impl_.response_.someonedisconnectresp_ = someonedisconnectresp;
+  }
+  // @@protoc_insertion_point(field_set_allocated:GoBang.GoBangResponse.someoneDisconnectResp)
+}
 GoBangResponse::GoBangResponse(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                          bool is_message_owned)
   : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
@@ -11314,6 +11897,16 @@ GoBangResponse::GoBangResponse(const GoBangResponse& from)
     case kPlayMessageResp: {
       _this->_internal_mutable_playmessageresp()->::GoBang::PlayerMessageResponse::MergeFrom(
           from._internal_playmessageresp());
+      break;
+    }
+    case kSomeoneJoinRoomResp: {
+      _this->_internal_mutable_someonejoinroomresp()->::GoBang::SomeoneJoinRoomResponse::MergeFrom(
+          from._internal_someonejoinroomresp());
+      break;
+    }
+    case kSomeoneDisconnectResp: {
+      _this->_internal_mutable_someonedisconnectresp()->::GoBang::SomeoneDisconnectResponse::MergeFrom(
+          from._internal_someonedisconnectresp());
       break;
     }
     case RESPONSE_NOT_SET: {
@@ -11464,6 +12057,18 @@ void GoBangResponse::clear_response() {
     case kPlayMessageResp: {
       if (GetArenaForAllocation() == nullptr) {
         delete _impl_.response_.playmessageresp_;
+      }
+      break;
+    }
+    case kSomeoneJoinRoomResp: {
+      if (GetArenaForAllocation() == nullptr) {
+        delete _impl_.response_.someonejoinroomresp_;
+      }
+      break;
+    }
+    case kSomeoneDisconnectResp: {
+      if (GetArenaForAllocation() == nullptr) {
+        delete _impl_.response_.someonedisconnectresp_;
       }
       break;
     }
@@ -11645,6 +12250,22 @@ const char* GoBangResponse::_InternalParse(const char* ptr, ::_pbi::ParseContext
         } else
           goto handle_unusual;
         continue;
+      // .GoBang.SomeoneJoinRoomResponse someoneJoinRoomResp = 20;
+      case 20:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 162)) {
+          ptr = ctx->ParseMessage(_internal_mutable_someonejoinroomresp(), ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // .GoBang.SomeoneDisconnectResponse someoneDisconnectResp = 21;
+      case 21:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 170)) {
+          ptr = ctx->ParseMessage(_internal_mutable_someonedisconnectresp(), ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
       default:
         goto handle_unusual;
     }  // switch
@@ -11807,6 +12428,20 @@ uint8_t* GoBangResponse::_InternalSerialize(
         _Internal::playmessageresp(this).GetCachedSize(), target, stream);
   }
 
+  // .GoBang.SomeoneJoinRoomResponse someoneJoinRoomResp = 20;
+  if (_internal_has_someonejoinroomresp()) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      InternalWriteMessage(20, _Internal::someonejoinroomresp(this),
+        _Internal::someonejoinroomresp(this).GetCachedSize(), target, stream);
+  }
+
+  // .GoBang.SomeoneDisconnectResponse someoneDisconnectResp = 21;
+  if (_internal_has_someonedisconnectresp()) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      InternalWriteMessage(21, _Internal::someonedisconnectresp(this),
+        _Internal::someonedisconnectresp(this).GetCachedSize(), target, stream);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
@@ -11956,6 +12591,20 @@ size_t GoBangResponse::ByteSizeLong() const {
           *_impl_.response_.playmessageresp_);
       break;
     }
+    // .GoBang.SomeoneJoinRoomResponse someoneJoinRoomResp = 20;
+    case kSomeoneJoinRoomResp: {
+      total_size += 2 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
+          *_impl_.response_.someonejoinroomresp_);
+      break;
+    }
+    // .GoBang.SomeoneDisconnectResponse someoneDisconnectResp = 21;
+    case kSomeoneDisconnectResp: {
+      total_size += 2 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
+          *_impl_.response_.someonedisconnectresp_);
+      break;
+    }
     case RESPONSE_NOT_SET: {
       break;
     }
@@ -12072,6 +12721,16 @@ void GoBangResponse::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const :
           from._internal_playmessageresp());
       break;
     }
+    case kSomeoneJoinRoomResp: {
+      _this->_internal_mutable_someonejoinroomresp()->::GoBang::SomeoneJoinRoomResponse::MergeFrom(
+          from._internal_someonejoinroomresp());
+      break;
+    }
+    case kSomeoneDisconnectResp: {
+      _this->_internal_mutable_someonedisconnectresp()->::GoBang::SomeoneDisconnectResponse::MergeFrom(
+          from._internal_someonedisconnectresp());
+      break;
+    }
     case RESPONSE_NOT_SET: {
       break;
     }
@@ -12101,7 +12760,7 @@ void GoBangResponse::InternalSwap(GoBangResponse* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata GoBangResponse::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_myprotocol_2eproto_getter, &descriptor_table_myprotocol_2eproto_once,
-      file_level_metadata_myprotocol_2eproto[34]);
+      file_level_metadata_myprotocol_2eproto[36]);
 }
 
 // @@protoc_insertion_point(namespace_scope)
@@ -12174,6 +12833,14 @@ Arena::CreateMaybeMessage< ::GoBang::JoinRoomRequest >(Arena* arena) {
 template<> PROTOBUF_NOINLINE ::GoBang::JoinRoomResponse*
 Arena::CreateMaybeMessage< ::GoBang::JoinRoomResponse >(Arena* arena) {
   return Arena::CreateMessageInternal< ::GoBang::JoinRoomResponse >(arena);
+}
+template<> PROTOBUF_NOINLINE ::GoBang::SomeoneJoinRoomResponse*
+Arena::CreateMaybeMessage< ::GoBang::SomeoneJoinRoomResponse >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::GoBang::SomeoneJoinRoomResponse >(arena);
+}
+template<> PROTOBUF_NOINLINE ::GoBang::SomeoneDisconnectResponse*
+Arena::CreateMaybeMessage< ::GoBang::SomeoneDisconnectResponse >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::GoBang::SomeoneDisconnectResponse >(arena);
 }
 template<> PROTOBUF_NOINLINE ::GoBang::Piece*
 Arena::CreateMaybeMessage< ::GoBang::Piece >(Arena* arena) {

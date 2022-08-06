@@ -32,12 +32,14 @@ void connection_pool::init(std::string url, std::string User, std::string PassWo
 
 		if (con == NULL)
 		{
+			std::cout << "mysql_init ERROR" << '\n';
 			exit(1);
 		}
 		con = mysql_real_connect(con, url.c_str(), User.c_str(), PassWord.c_str(), DBName.c_str(), Port, NULL, 0);
 
 		if (con == NULL)
 		{
+			std::cout << "mysql_real_connect ERROR"<< '\n';
 			exit(1);
 		}
 		std::cout << i + 1 << "数据库连接以创建\n";

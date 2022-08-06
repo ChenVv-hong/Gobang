@@ -15,7 +15,12 @@
 
 class room {
 public:
-	room(std::string rid);
+	/**
+	 * 构造函数
+	 * @param rid 房间号
+	 * @param type 游戏类型 1 属于 普通模式 不结算积分 2 属于 排位模式结算积分
+	 */
+	room(std::string rid, int type);
 
 	/**
 	 * 初始化棋局
@@ -82,6 +87,8 @@ public:
 
 	const std::string &getWhoWin() const;
 
+	int getPlayerCount() const;
+	GoBang::Player& getAnotherPlayer(std::string &uid);
 private:
 	/**
 	 * 初始化房间 将房间内的所有 都进行初始化
@@ -105,14 +112,15 @@ public:
 	GoBang::Player p2;  //玩家2 信息 uid name points
 	GoBang::PieceColor p2_color;    //玩家2在游戏中执什么子
 	bool gameState; //该房间是否正在游戏
-	int continueGame;
+	int continueGame;   //房间中请求继续游戏的人数
+	int gametype;   //游戏类型 1 属于 普通模式 不结算积分 2 属于 排位模式结算积分
 private:
-	const int8_t BOARD_ROW = 16;
-	const int8_t BOARD_COL = 16;
+	const int8_t BOARD_ROW = 15;
+	const int8_t BOARD_COL = 15;
 	//房间中玩家个数
 	int playerCount;
 	//棋盘
-	int8_t board[16][16];
+	int8_t board[15][15];
 	//是否有人赢
 	bool isWin;
 	//谁赢

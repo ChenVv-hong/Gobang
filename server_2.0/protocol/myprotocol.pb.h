@@ -137,6 +137,12 @@ extern SetPieceRequestDefaultTypeInternal _SetPieceRequest_default_instance_;
 class SetPieceResponse;
 struct SetPieceResponseDefaultTypeInternal;
 extern SetPieceResponseDefaultTypeInternal _SetPieceResponse_default_instance_;
+class SomeoneDisconnectResponse;
+struct SomeoneDisconnectResponseDefaultTypeInternal;
+extern SomeoneDisconnectResponseDefaultTypeInternal _SomeoneDisconnectResponse_default_instance_;
+class SomeoneJoinRoomResponse;
+struct SomeoneJoinRoomResponseDefaultTypeInternal;
+extern SomeoneJoinRoomResponseDefaultTypeInternal _SomeoneJoinRoomResponse_default_instance_;
 class SurrenderRequest;
 struct SurrenderRequestDefaultTypeInternal;
 extern SurrenderRequestDefaultTypeInternal _SurrenderRequest_default_instance_;
@@ -184,6 +190,8 @@ template<> ::GoBang::RegisterRequest* Arena::CreateMaybeMessage<::GoBang::Regist
 template<> ::GoBang::RegisterResponse* Arena::CreateMaybeMessage<::GoBang::RegisterResponse>(Arena*);
 template<> ::GoBang::SetPieceRequest* Arena::CreateMaybeMessage<::GoBang::SetPieceRequest>(Arena*);
 template<> ::GoBang::SetPieceResponse* Arena::CreateMaybeMessage<::GoBang::SetPieceResponse>(Arena*);
+template<> ::GoBang::SomeoneDisconnectResponse* Arena::CreateMaybeMessage<::GoBang::SomeoneDisconnectResponse>(Arena*);
+template<> ::GoBang::SomeoneJoinRoomResponse* Arena::CreateMaybeMessage<::GoBang::SomeoneJoinRoomResponse>(Arena*);
 template<> ::GoBang::SurrenderRequest* Arena::CreateMaybeMessage<::GoBang::SurrenderRequest>(Arena*);
 template<> ::GoBang::TieRequest* Arena::CreateMaybeMessage<::GoBang::TieRequest>(Arena*);
 template<> ::GoBang::TieResponse* Arena::CreateMaybeMessage<::GoBang::TieResponse>(Arena*);
@@ -210,12 +218,14 @@ enum TYPE : int {
   GAMESTART = 15,
   GAMEOVER = 14,
   PLAYER_MESSAGE = 16,
+  SOMEONE_JOIN_ROOM = 17,
+  SOMEONE_DISCONNECT = 18,
   TYPE_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
   TYPE_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
 };
 bool TYPE_IsValid(int value);
 constexpr TYPE TYPE_MIN = LOGIN;
-constexpr TYPE TYPE_MAX = PLAYER_MESSAGE;
+constexpr TYPE TYPE_MAX = SOMEONE_DISCONNECT;
 constexpr int TYPE_ARRAYSIZE = TYPE_MAX + 1;
 
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* TYPE_descriptor();
@@ -3161,6 +3171,339 @@ class JoinRoomResponse final :
 };
 // -------------------------------------------------------------------
 
+class SomeoneJoinRoomResponse final :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:GoBang.SomeoneJoinRoomResponse) */ {
+ public:
+  inline SomeoneJoinRoomResponse() : SomeoneJoinRoomResponse(nullptr) {}
+  ~SomeoneJoinRoomResponse() override;
+  explicit PROTOBUF_CONSTEXPR SomeoneJoinRoomResponse(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+
+  SomeoneJoinRoomResponse(const SomeoneJoinRoomResponse& from);
+  SomeoneJoinRoomResponse(SomeoneJoinRoomResponse&& from) noexcept
+    : SomeoneJoinRoomResponse() {
+    *this = ::std::move(from);
+  }
+
+  inline SomeoneJoinRoomResponse& operator=(const SomeoneJoinRoomResponse& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline SomeoneJoinRoomResponse& operator=(SomeoneJoinRoomResponse&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const SomeoneJoinRoomResponse& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const SomeoneJoinRoomResponse* internal_default_instance() {
+    return reinterpret_cast<const SomeoneJoinRoomResponse*>(
+               &_SomeoneJoinRoomResponse_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    17;
+
+  friend void swap(SomeoneJoinRoomResponse& a, SomeoneJoinRoomResponse& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(SomeoneJoinRoomResponse* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(SomeoneJoinRoomResponse* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  SomeoneJoinRoomResponse* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<SomeoneJoinRoomResponse>(arena);
+  }
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
+  void CopyFrom(const SomeoneJoinRoomResponse& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
+  void MergeFrom( const SomeoneJoinRoomResponse& from) {
+    SomeoneJoinRoomResponse::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(SomeoneJoinRoomResponse* other);
+
+  private:
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "GoBang.SomeoneJoinRoomResponse";
+  }
+  protected:
+  explicit SomeoneJoinRoomResponse(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
+  public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kNameFieldNumber = 2,
+    kReconnectFieldNumber = 1,
+  };
+  // string name = 2;
+  void clear_name();
+  const std::string& name() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_name(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_name();
+  PROTOBUF_NODISCARD std::string* release_name();
+  void set_allocated_name(std::string* name);
+  private:
+  const std::string& _internal_name() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
+  std::string* _internal_mutable_name();
+  public:
+
+  // bool reconnect = 1;
+  void clear_reconnect();
+  bool reconnect() const;
+  void set_reconnect(bool value);
+  private:
+  bool _internal_reconnect() const;
+  void _internal_set_reconnect(bool value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:GoBang.SomeoneJoinRoomResponse)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_;
+    bool reconnect_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_myprotocol_2eproto;
+};
+// -------------------------------------------------------------------
+
+class SomeoneDisconnectResponse final :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:GoBang.SomeoneDisconnectResponse) */ {
+ public:
+  inline SomeoneDisconnectResponse() : SomeoneDisconnectResponse(nullptr) {}
+  ~SomeoneDisconnectResponse() override;
+  explicit PROTOBUF_CONSTEXPR SomeoneDisconnectResponse(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+
+  SomeoneDisconnectResponse(const SomeoneDisconnectResponse& from);
+  SomeoneDisconnectResponse(SomeoneDisconnectResponse&& from) noexcept
+    : SomeoneDisconnectResponse() {
+    *this = ::std::move(from);
+  }
+
+  inline SomeoneDisconnectResponse& operator=(const SomeoneDisconnectResponse& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline SomeoneDisconnectResponse& operator=(SomeoneDisconnectResponse&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const SomeoneDisconnectResponse& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const SomeoneDisconnectResponse* internal_default_instance() {
+    return reinterpret_cast<const SomeoneDisconnectResponse*>(
+               &_SomeoneDisconnectResponse_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    18;
+
+  friend void swap(SomeoneDisconnectResponse& a, SomeoneDisconnectResponse& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(SomeoneDisconnectResponse* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(SomeoneDisconnectResponse* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  SomeoneDisconnectResponse* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<SomeoneDisconnectResponse>(arena);
+  }
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
+  void CopyFrom(const SomeoneDisconnectResponse& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
+  void MergeFrom( const SomeoneDisconnectResponse& from) {
+    SomeoneDisconnectResponse::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(SomeoneDisconnectResponse* other);
+
+  private:
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "GoBang.SomeoneDisconnectResponse";
+  }
+  protected:
+  explicit SomeoneDisconnectResponse(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
+  public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kUidFieldNumber = 1,
+    kNameFieldNumber = 2,
+  };
+  // string uid = 1;
+  void clear_uid();
+  const std::string& uid() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_uid(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_uid();
+  PROTOBUF_NODISCARD std::string* release_uid();
+  void set_allocated_uid(std::string* uid);
+  private:
+  const std::string& _internal_uid() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_uid(const std::string& value);
+  std::string* _internal_mutable_uid();
+  public:
+
+  // string name = 2;
+  void clear_name();
+  const std::string& name() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_name(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_name();
+  PROTOBUF_NODISCARD std::string* release_name();
+  void set_allocated_name(std::string* name);
+  private:
+  const std::string& _internal_name() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
+  std::string* _internal_mutable_name();
+  public:
+
+  // @@protoc_insertion_point(class_scope:GoBang.SomeoneDisconnectResponse)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr uid_;
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_myprotocol_2eproto;
+};
+// -------------------------------------------------------------------
+
 class Piece final :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:GoBang.Piece) */ {
  public:
@@ -3209,7 +3552,7 @@ class Piece final :
                &_Piece_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    17;
+    19;
 
   friend void swap(Piece& a, Piece& b) {
     a.Swap(&b);
@@ -3379,7 +3722,7 @@ class Border final :
                &_Border_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    18;
+    20;
 
   friend void swap(Border& a, Border& b) {
     a.Swap(&b);
@@ -3604,7 +3947,7 @@ class SetPieceRequest final :
                &_SetPieceRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    19;
+    21;
 
   friend void swap(SetPieceRequest& a, SetPieceRequest& b) {
     a.Swap(&b);
@@ -3777,7 +4120,7 @@ class SetPieceResponse final :
                &_SetPieceResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    20;
+    22;
 
   friend void swap(SetPieceResponse& a, SetPieceResponse& b) {
     a.Swap(&b);
@@ -3972,7 +4315,7 @@ class UndoRequest final :
                &_UndoRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    21;
+    23;
 
   friend void swap(UndoRequest& a, UndoRequest& b) {
     a.Swap(&b);
@@ -4141,7 +4484,7 @@ class UndoResponse final :
                &_UndoResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    22;
+    24;
 
   friend void swap(UndoResponse& a, UndoResponse& b) {
     a.Swap(&b);
@@ -4321,7 +4664,7 @@ class TieRequest final :
                &_TieRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    23;
+    25;
 
   friend void swap(TieRequest& a, TieRequest& b) {
     a.Swap(&b);
@@ -4490,7 +4833,7 @@ class TieResponse final :
                &_TieResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    24;
+    26;
 
   friend void swap(TieResponse& a, TieResponse& b) {
     a.Swap(&b);
@@ -4670,7 +5013,7 @@ class SurrenderRequest final :
                &_SurrenderRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    25;
+    27;
 
   friend void swap(SurrenderRequest& a, SurrenderRequest& b) {
     a.Swap(&b);
@@ -4839,7 +5182,7 @@ class Messg final :
                &_Messg_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    26;
+    28;
 
   friend void swap(Messg& a, Messg& b) {
     a.Swap(&b);
@@ -5040,7 +5383,7 @@ class ContinueGameRequest final :
                &_ContinueGameRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    27;
+    29;
 
   friend void swap(ContinueGameRequest& a, ContinueGameRequest& b) {
     a.Swap(&b);
@@ -5208,7 +5551,7 @@ class ContinueGameResponse final :
                &_ContinueGameResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    28;
+    30;
 
   friend void swap(ContinueGameResponse& a, ContinueGameResponse& b) {
     a.Swap(&b);
@@ -5327,7 +5670,7 @@ class QuitRoomRequest final :
                &_QuitRoomRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    29;
+    31;
 
   friend void swap(QuitRoomRequest& a, QuitRoomRequest& b) {
     a.Swap(&b);
@@ -5496,7 +5839,7 @@ class QuitRoomResponse final :
                &_QuitRoomResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    30;
+    32;
 
   friend void swap(QuitRoomResponse& a, QuitRoomResponse& b) {
     a.Swap(&b);
@@ -5665,7 +6008,7 @@ class GameStart final :
                &_GameStart_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    31;
+    33;
 
   friend void swap(GameStart& a, GameStart& b) {
     a.Swap(&b);
@@ -5872,7 +6215,7 @@ class GameOver final :
                &_GameOver_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    32;
+    34;
 
   friend void swap(GameOver& a, GameOver& b) {
     a.Swap(&b);
@@ -6073,7 +6416,7 @@ class GoBangRequest final :
                &_GoBangRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    33;
+    35;
 
   friend void swap(GoBangRequest& a, GoBangRequest& b) {
     a.Swap(&b);
@@ -6603,6 +6946,8 @@ class GoBangResponse final :
     kRankMatchResp = 16,
     kJoinRoomResp = 9,
     kPlayMessageResp = 19,
+    kSomeoneJoinRoomResp = 20,
+    kSomeoneDisconnectResp = 21,
     RESPONSE_NOT_SET = 0,
   };
 
@@ -6611,7 +6956,7 @@ class GoBangResponse final :
                &_GoBangResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    34;
+    36;
 
   friend void swap(GoBangResponse& a, GoBangResponse& b) {
     a.Swap(&b);
@@ -6703,6 +7048,8 @@ class GoBangResponse final :
     kRankMatchRespFieldNumber = 16,
     kJoinRoomRespFieldNumber = 9,
     kPlayMessageRespFieldNumber = 19,
+    kSomeoneJoinRoomRespFieldNumber = 20,
+    kSomeoneDisconnectRespFieldNumber = 21,
   };
   // .GoBang.TYPE type = 1;
   void clear_type();
@@ -7037,6 +7384,42 @@ class GoBangResponse final :
       ::GoBang::PlayerMessageResponse* playmessageresp);
   ::GoBang::PlayerMessageResponse* unsafe_arena_release_playmessageresp();
 
+  // .GoBang.SomeoneJoinRoomResponse someoneJoinRoomResp = 20;
+  bool has_someonejoinroomresp() const;
+  private:
+  bool _internal_has_someonejoinroomresp() const;
+  public:
+  void clear_someonejoinroomresp();
+  const ::GoBang::SomeoneJoinRoomResponse& someonejoinroomresp() const;
+  PROTOBUF_NODISCARD ::GoBang::SomeoneJoinRoomResponse* release_someonejoinroomresp();
+  ::GoBang::SomeoneJoinRoomResponse* mutable_someonejoinroomresp();
+  void set_allocated_someonejoinroomresp(::GoBang::SomeoneJoinRoomResponse* someonejoinroomresp);
+  private:
+  const ::GoBang::SomeoneJoinRoomResponse& _internal_someonejoinroomresp() const;
+  ::GoBang::SomeoneJoinRoomResponse* _internal_mutable_someonejoinroomresp();
+  public:
+  void unsafe_arena_set_allocated_someonejoinroomresp(
+      ::GoBang::SomeoneJoinRoomResponse* someonejoinroomresp);
+  ::GoBang::SomeoneJoinRoomResponse* unsafe_arena_release_someonejoinroomresp();
+
+  // .GoBang.SomeoneDisconnectResponse someoneDisconnectResp = 21;
+  bool has_someonedisconnectresp() const;
+  private:
+  bool _internal_has_someonedisconnectresp() const;
+  public:
+  void clear_someonedisconnectresp();
+  const ::GoBang::SomeoneDisconnectResponse& someonedisconnectresp() const;
+  PROTOBUF_NODISCARD ::GoBang::SomeoneDisconnectResponse* release_someonedisconnectresp();
+  ::GoBang::SomeoneDisconnectResponse* mutable_someonedisconnectresp();
+  void set_allocated_someonedisconnectresp(::GoBang::SomeoneDisconnectResponse* someonedisconnectresp);
+  private:
+  const ::GoBang::SomeoneDisconnectResponse& _internal_someonedisconnectresp() const;
+  ::GoBang::SomeoneDisconnectResponse* _internal_mutable_someonedisconnectresp();
+  public:
+  void unsafe_arena_set_allocated_someonedisconnectresp(
+      ::GoBang::SomeoneDisconnectResponse* someonedisconnectresp);
+  ::GoBang::SomeoneDisconnectResponse* unsafe_arena_release_someonedisconnectresp();
+
   void clear_response();
   ResponseCase response_case() const;
   // @@protoc_insertion_point(class_scope:GoBang.GoBangResponse)
@@ -7060,6 +7443,8 @@ class GoBangResponse final :
   void set_has_rankmatchresp();
   void set_has_joinroomresp();
   void set_has_playmessageresp();
+  void set_has_someonejoinroomresp();
+  void set_has_someonedisconnectresp();
 
   inline bool has_response() const;
   inline void clear_has_response();
@@ -7090,6 +7475,8 @@ class GoBangResponse final :
       ::GoBang::RankMatchResponse* rankmatchresp_;
       ::GoBang::JoinRoomResponse* joinroomresp_;
       ::GoBang::PlayerMessageResponse* playmessageresp_;
+      ::GoBang::SomeoneJoinRoomResponse* someonejoinroomresp_;
+      ::GoBang::SomeoneDisconnectResponse* someonedisconnectresp_;
     } response_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
     uint32_t _oneof_case_[1];
@@ -8791,6 +9178,184 @@ inline void JoinRoomResponse::set_allocated_rid(std::string* rid) {
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:GoBang.JoinRoomResponse.rid)
+}
+
+// -------------------------------------------------------------------
+
+// SomeoneJoinRoomResponse
+
+// bool reconnect = 1;
+inline void SomeoneJoinRoomResponse::clear_reconnect() {
+  _impl_.reconnect_ = false;
+}
+inline bool SomeoneJoinRoomResponse::_internal_reconnect() const {
+  return _impl_.reconnect_;
+}
+inline bool SomeoneJoinRoomResponse::reconnect() const {
+  // @@protoc_insertion_point(field_get:GoBang.SomeoneJoinRoomResponse.reconnect)
+  return _internal_reconnect();
+}
+inline void SomeoneJoinRoomResponse::_internal_set_reconnect(bool value) {
+  
+  _impl_.reconnect_ = value;
+}
+inline void SomeoneJoinRoomResponse::set_reconnect(bool value) {
+  _internal_set_reconnect(value);
+  // @@protoc_insertion_point(field_set:GoBang.SomeoneJoinRoomResponse.reconnect)
+}
+
+// string name = 2;
+inline void SomeoneJoinRoomResponse::clear_name() {
+  _impl_.name_.ClearToEmpty();
+}
+inline const std::string& SomeoneJoinRoomResponse::name() const {
+  // @@protoc_insertion_point(field_get:GoBang.SomeoneJoinRoomResponse.name)
+  return _internal_name();
+}
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void SomeoneJoinRoomResponse::set_name(ArgT0&& arg0, ArgT... args) {
+ 
+ _impl_.name_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:GoBang.SomeoneJoinRoomResponse.name)
+}
+inline std::string* SomeoneJoinRoomResponse::mutable_name() {
+  std::string* _s = _internal_mutable_name();
+  // @@protoc_insertion_point(field_mutable:GoBang.SomeoneJoinRoomResponse.name)
+  return _s;
+}
+inline const std::string& SomeoneJoinRoomResponse::_internal_name() const {
+  return _impl_.name_.Get();
+}
+inline void SomeoneJoinRoomResponse::_internal_set_name(const std::string& value) {
+  
+  _impl_.name_.Set(value, GetArenaForAllocation());
+}
+inline std::string* SomeoneJoinRoomResponse::_internal_mutable_name() {
+  
+  return _impl_.name_.Mutable(GetArenaForAllocation());
+}
+inline std::string* SomeoneJoinRoomResponse::release_name() {
+  // @@protoc_insertion_point(field_release:GoBang.SomeoneJoinRoomResponse.name)
+  return _impl_.name_.Release();
+}
+inline void SomeoneJoinRoomResponse::set_allocated_name(std::string* name) {
+  if (name != nullptr) {
+    
+  } else {
+    
+  }
+  _impl_.name_.SetAllocated(name, GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.name_.IsDefault()) {
+    _impl_.name_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:GoBang.SomeoneJoinRoomResponse.name)
+}
+
+// -------------------------------------------------------------------
+
+// SomeoneDisconnectResponse
+
+// string uid = 1;
+inline void SomeoneDisconnectResponse::clear_uid() {
+  _impl_.uid_.ClearToEmpty();
+}
+inline const std::string& SomeoneDisconnectResponse::uid() const {
+  // @@protoc_insertion_point(field_get:GoBang.SomeoneDisconnectResponse.uid)
+  return _internal_uid();
+}
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void SomeoneDisconnectResponse::set_uid(ArgT0&& arg0, ArgT... args) {
+ 
+ _impl_.uid_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:GoBang.SomeoneDisconnectResponse.uid)
+}
+inline std::string* SomeoneDisconnectResponse::mutable_uid() {
+  std::string* _s = _internal_mutable_uid();
+  // @@protoc_insertion_point(field_mutable:GoBang.SomeoneDisconnectResponse.uid)
+  return _s;
+}
+inline const std::string& SomeoneDisconnectResponse::_internal_uid() const {
+  return _impl_.uid_.Get();
+}
+inline void SomeoneDisconnectResponse::_internal_set_uid(const std::string& value) {
+  
+  _impl_.uid_.Set(value, GetArenaForAllocation());
+}
+inline std::string* SomeoneDisconnectResponse::_internal_mutable_uid() {
+  
+  return _impl_.uid_.Mutable(GetArenaForAllocation());
+}
+inline std::string* SomeoneDisconnectResponse::release_uid() {
+  // @@protoc_insertion_point(field_release:GoBang.SomeoneDisconnectResponse.uid)
+  return _impl_.uid_.Release();
+}
+inline void SomeoneDisconnectResponse::set_allocated_uid(std::string* uid) {
+  if (uid != nullptr) {
+    
+  } else {
+    
+  }
+  _impl_.uid_.SetAllocated(uid, GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.uid_.IsDefault()) {
+    _impl_.uid_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:GoBang.SomeoneDisconnectResponse.uid)
+}
+
+// string name = 2;
+inline void SomeoneDisconnectResponse::clear_name() {
+  _impl_.name_.ClearToEmpty();
+}
+inline const std::string& SomeoneDisconnectResponse::name() const {
+  // @@protoc_insertion_point(field_get:GoBang.SomeoneDisconnectResponse.name)
+  return _internal_name();
+}
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void SomeoneDisconnectResponse::set_name(ArgT0&& arg0, ArgT... args) {
+ 
+ _impl_.name_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:GoBang.SomeoneDisconnectResponse.name)
+}
+inline std::string* SomeoneDisconnectResponse::mutable_name() {
+  std::string* _s = _internal_mutable_name();
+  // @@protoc_insertion_point(field_mutable:GoBang.SomeoneDisconnectResponse.name)
+  return _s;
+}
+inline const std::string& SomeoneDisconnectResponse::_internal_name() const {
+  return _impl_.name_.Get();
+}
+inline void SomeoneDisconnectResponse::_internal_set_name(const std::string& value) {
+  
+  _impl_.name_.Set(value, GetArenaForAllocation());
+}
+inline std::string* SomeoneDisconnectResponse::_internal_mutable_name() {
+  
+  return _impl_.name_.Mutable(GetArenaForAllocation());
+}
+inline std::string* SomeoneDisconnectResponse::release_name() {
+  // @@protoc_insertion_point(field_release:GoBang.SomeoneDisconnectResponse.name)
+  return _impl_.name_.Release();
+}
+inline void SomeoneDisconnectResponse::set_allocated_name(std::string* name) {
+  if (name != nullptr) {
+    
+  } else {
+    
+  }
+  _impl_.name_.SetAllocated(name, GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.name_.IsDefault()) {
+    _impl_.name_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:GoBang.SomeoneDisconnectResponse.name)
 }
 
 // -------------------------------------------------------------------
@@ -13394,6 +13959,154 @@ inline ::GoBang::PlayerMessageResponse* GoBangResponse::mutable_playmessageresp(
   return _msg;
 }
 
+// .GoBang.SomeoneJoinRoomResponse someoneJoinRoomResp = 20;
+inline bool GoBangResponse::_internal_has_someonejoinroomresp() const {
+  return response_case() == kSomeoneJoinRoomResp;
+}
+inline bool GoBangResponse::has_someonejoinroomresp() const {
+  return _internal_has_someonejoinroomresp();
+}
+inline void GoBangResponse::set_has_someonejoinroomresp() {
+  _impl_._oneof_case_[0] = kSomeoneJoinRoomResp;
+}
+inline void GoBangResponse::clear_someonejoinroomresp() {
+  if (_internal_has_someonejoinroomresp()) {
+    if (GetArenaForAllocation() == nullptr) {
+      delete _impl_.response_.someonejoinroomresp_;
+    }
+    clear_has_response();
+  }
+}
+inline ::GoBang::SomeoneJoinRoomResponse* GoBangResponse::release_someonejoinroomresp() {
+  // @@protoc_insertion_point(field_release:GoBang.GoBangResponse.someoneJoinRoomResp)
+  if (_internal_has_someonejoinroomresp()) {
+    clear_has_response();
+    ::GoBang::SomeoneJoinRoomResponse* temp = _impl_.response_.someonejoinroomresp_;
+    if (GetArenaForAllocation() != nullptr) {
+      temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+    }
+    _impl_.response_.someonejoinroomresp_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline const ::GoBang::SomeoneJoinRoomResponse& GoBangResponse::_internal_someonejoinroomresp() const {
+  return _internal_has_someonejoinroomresp()
+      ? *_impl_.response_.someonejoinroomresp_
+      : reinterpret_cast< ::GoBang::SomeoneJoinRoomResponse&>(::GoBang::_SomeoneJoinRoomResponse_default_instance_);
+}
+inline const ::GoBang::SomeoneJoinRoomResponse& GoBangResponse::someonejoinroomresp() const {
+  // @@protoc_insertion_point(field_get:GoBang.GoBangResponse.someoneJoinRoomResp)
+  return _internal_someonejoinroomresp();
+}
+inline ::GoBang::SomeoneJoinRoomResponse* GoBangResponse::unsafe_arena_release_someonejoinroomresp() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:GoBang.GoBangResponse.someoneJoinRoomResp)
+  if (_internal_has_someonejoinroomresp()) {
+    clear_has_response();
+    ::GoBang::SomeoneJoinRoomResponse* temp = _impl_.response_.someonejoinroomresp_;
+    _impl_.response_.someonejoinroomresp_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline void GoBangResponse::unsafe_arena_set_allocated_someonejoinroomresp(::GoBang::SomeoneJoinRoomResponse* someonejoinroomresp) {
+  clear_response();
+  if (someonejoinroomresp) {
+    set_has_someonejoinroomresp();
+    _impl_.response_.someonejoinroomresp_ = someonejoinroomresp;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:GoBang.GoBangResponse.someoneJoinRoomResp)
+}
+inline ::GoBang::SomeoneJoinRoomResponse* GoBangResponse::_internal_mutable_someonejoinroomresp() {
+  if (!_internal_has_someonejoinroomresp()) {
+    clear_response();
+    set_has_someonejoinroomresp();
+    _impl_.response_.someonejoinroomresp_ = CreateMaybeMessage< ::GoBang::SomeoneJoinRoomResponse >(GetArenaForAllocation());
+  }
+  return _impl_.response_.someonejoinroomresp_;
+}
+inline ::GoBang::SomeoneJoinRoomResponse* GoBangResponse::mutable_someonejoinroomresp() {
+  ::GoBang::SomeoneJoinRoomResponse* _msg = _internal_mutable_someonejoinroomresp();
+  // @@protoc_insertion_point(field_mutable:GoBang.GoBangResponse.someoneJoinRoomResp)
+  return _msg;
+}
+
+// .GoBang.SomeoneDisconnectResponse someoneDisconnectResp = 21;
+inline bool GoBangResponse::_internal_has_someonedisconnectresp() const {
+  return response_case() == kSomeoneDisconnectResp;
+}
+inline bool GoBangResponse::has_someonedisconnectresp() const {
+  return _internal_has_someonedisconnectresp();
+}
+inline void GoBangResponse::set_has_someonedisconnectresp() {
+  _impl_._oneof_case_[0] = kSomeoneDisconnectResp;
+}
+inline void GoBangResponse::clear_someonedisconnectresp() {
+  if (_internal_has_someonedisconnectresp()) {
+    if (GetArenaForAllocation() == nullptr) {
+      delete _impl_.response_.someonedisconnectresp_;
+    }
+    clear_has_response();
+  }
+}
+inline ::GoBang::SomeoneDisconnectResponse* GoBangResponse::release_someonedisconnectresp() {
+  // @@protoc_insertion_point(field_release:GoBang.GoBangResponse.someoneDisconnectResp)
+  if (_internal_has_someonedisconnectresp()) {
+    clear_has_response();
+    ::GoBang::SomeoneDisconnectResponse* temp = _impl_.response_.someonedisconnectresp_;
+    if (GetArenaForAllocation() != nullptr) {
+      temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+    }
+    _impl_.response_.someonedisconnectresp_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline const ::GoBang::SomeoneDisconnectResponse& GoBangResponse::_internal_someonedisconnectresp() const {
+  return _internal_has_someonedisconnectresp()
+      ? *_impl_.response_.someonedisconnectresp_
+      : reinterpret_cast< ::GoBang::SomeoneDisconnectResponse&>(::GoBang::_SomeoneDisconnectResponse_default_instance_);
+}
+inline const ::GoBang::SomeoneDisconnectResponse& GoBangResponse::someonedisconnectresp() const {
+  // @@protoc_insertion_point(field_get:GoBang.GoBangResponse.someoneDisconnectResp)
+  return _internal_someonedisconnectresp();
+}
+inline ::GoBang::SomeoneDisconnectResponse* GoBangResponse::unsafe_arena_release_someonedisconnectresp() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:GoBang.GoBangResponse.someoneDisconnectResp)
+  if (_internal_has_someonedisconnectresp()) {
+    clear_has_response();
+    ::GoBang::SomeoneDisconnectResponse* temp = _impl_.response_.someonedisconnectresp_;
+    _impl_.response_.someonedisconnectresp_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline void GoBangResponse::unsafe_arena_set_allocated_someonedisconnectresp(::GoBang::SomeoneDisconnectResponse* someonedisconnectresp) {
+  clear_response();
+  if (someonedisconnectresp) {
+    set_has_someonedisconnectresp();
+    _impl_.response_.someonedisconnectresp_ = someonedisconnectresp;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:GoBang.GoBangResponse.someoneDisconnectResp)
+}
+inline ::GoBang::SomeoneDisconnectResponse* GoBangResponse::_internal_mutable_someonedisconnectresp() {
+  if (!_internal_has_someonedisconnectresp()) {
+    clear_response();
+    set_has_someonedisconnectresp();
+    _impl_.response_.someonedisconnectresp_ = CreateMaybeMessage< ::GoBang::SomeoneDisconnectResponse >(GetArenaForAllocation());
+  }
+  return _impl_.response_.someonedisconnectresp_;
+}
+inline ::GoBang::SomeoneDisconnectResponse* GoBangResponse::mutable_someonedisconnectresp() {
+  ::GoBang::SomeoneDisconnectResponse* _msg = _internal_mutable_someonedisconnectresp();
+  // @@protoc_insertion_point(field_mutable:GoBang.GoBangResponse.someoneDisconnectResp)
+  return _msg;
+}
+
 inline bool GoBangResponse::has_response() const {
   return response_case() != RESPONSE_NOT_SET;
 }
@@ -13406,6 +14119,10 @@ inline GoBangResponse::ResponseCase GoBangResponse::response_case() const {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

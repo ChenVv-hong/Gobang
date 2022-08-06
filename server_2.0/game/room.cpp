@@ -6,8 +6,9 @@
 
 #include <utility>
 
-room::room(std::string rid) {
+room::room(std::string rid, int type) {
 	this->roomId = std::move(rid);
+	this->gametype = type;
 	initRoom();
 }
 
@@ -45,19 +46,35 @@ void room::initGame() {
 
 
 int room::addPlayer(int p_fd, GoBang::Player p, GoBang::PieceColor c) {
-	if(playerCount == 0){
-		p1_fd = p_fd;
-		p1 = std::move(p);
-		p1_color = c;
-		playerCount++;
-		return playerCount;
-	}
-	else if(playerCount == 1){
-		p2_fd = p_fd;
-		p2 = std::move(p);
-		p2_color = c;
-		playerCount++;
-		return playerCount;
+//	if(playerCount == 0){
+//		p1_fd = p_fd;
+//		p1 = std::move(p);
+//		p1_color = c;
+//		playerCount++;
+//		return playerCount;
+//	}
+//	else if(playerCount == 1){
+//		p2_fd = p_fd;
+//		p2 = std::move(p);
+//		p2_color = c;
+//		playerCount++;
+//		return playerCount;
+//	}
+	if(playerCount == 0 || playerCount == 1){
+		if(p1_fd == -1){
+			p1_fd = p_fd;
+			p1 = std::move(p);
+			p1_color = c;
+			playerCount++;
+			return playerCount;
+		}
+		if(p2_fd == -1){
+			p2_fd = p_fd;
+			p2 = std::move(p);
+			p2_color = c;
+			playerCount++;
+			return playerCount;
+		}
 	}
 	else{
 		//可能为重联用户加入房间
@@ -65,7 +82,7 @@ int room::addPlayer(int p_fd, GoBang::Player p, GoBang::PieceColor c) {
 			p1_fd = p_fd;
 			return -2;
 		}
-		else if(p.uid() == p1.uid()){
+		else if(p.uid() == p2.uid()){
 			p2_fd = p_fd;
 			return -2;
 		}
@@ -89,6 +106,8 @@ bool room::setPiece(const GoBang::Piece& p) {
 	if(p.color() == next_color){
 		board[p.x()][p.y()] = p.color();
 		pieceOrder.push(p);
+		if(next_color == GoBang::BLACK) next_color = GoBang::WHITE;
+		else if(next_color == GoBang::WHITE) next_color = GoBang::BLACK;
 		isWin = checkWin();
 		return true;
 	}
@@ -139,8 +158,8 @@ int room::getAnotherPlayerFd(const std::string &uid) {
 }
 
 GoBang::PieceColor room::getAnotherPlayerPieceColor(const std::string &uid) {
-	if(p1.uid() == uid) return p1_color;
-	if(p2.uid() == uid) return p2_color;
+	if(p1.uid() == uid) return p2_color;
+	if(p2.uid() == uid) return p1_color;
 	return GoBang::NO_PIECE;
 }
 
@@ -157,7 +176,7 @@ GoBang::Border room::getBorder() {
 	int64_t white = 0x0003;
 
 	for(i = 0; i < 2; i++){
-		for(int j = 0; j < 16; j++){
+		for(int j = 0; j < 15; j++){
 			if(board[i][j] == GoBang::NO_PIECE){
 				r |= no;
 			}
@@ -178,7 +197,7 @@ GoBang::Border room::getBorder() {
 	black = 0x0002;
 	white = 0x0003;
 	for(;i < 4; i++){
-		for(int j = 0; j < 16; j++){
+		for(int j = 0; j < 15; j++){
 			if(board[i][j] == GoBang::NO_PIECE){
 				r |= no;
 			}
@@ -199,7 +218,7 @@ GoBang::Border room::getBorder() {
 	black = 0x0002;
 	white = 0x0003;
 	for(;i < 6; i++){
-		for(int j = 0; j < 16; j++){
+		for(int j = 0; j < 15; j++){
 			if(board[i][j] == GoBang::NO_PIECE){
 				r |= no;
 			}
@@ -220,7 +239,7 @@ GoBang::Border room::getBorder() {
 	black = 0x0002;
 	white = 0x0003;
 	for(;i < 8; i++){
-		for(int j = 0; j < 16; j++){
+		for(int j = 0; j < 15; j++){
 			if(board[i][j] == GoBang::NO_PIECE){
 				r |= no;
 			}
@@ -241,7 +260,7 @@ GoBang::Border room::getBorder() {
 	black = 0x0002;
 	white = 0x0003;
 	for(;i < 10; i++){
-		for(int j = 0; j < 16; j++){
+		for(int j = 0; j < 15; j++){
 			if(board[i][j] == GoBang::NO_PIECE){
 				r |= no;
 			}
@@ -262,7 +281,7 @@ GoBang::Border room::getBorder() {
 	black = 0x0002;
 	white = 0x0003;
 	for(;i < 12; i++){
-		for(int j = 0; j < 16; j++){
+		for(int j = 0; j < 15; j++){
 			if(board[i][j] == GoBang::NO_PIECE){
 				r |= no;
 			}
@@ -283,7 +302,7 @@ GoBang::Border room::getBorder() {
 	black = 0x0002;
 	white = 0x0003;
 	for(;i < 14; i++){
-		for(int j = 0; j < 16; j++){
+		for(int j = 0; j < 15; j++){
 			if(board[i][j] == GoBang::NO_PIECE){
 				r |= no;
 			}
@@ -303,8 +322,8 @@ GoBang::Border room::getBorder() {
 	no = 0x0000;
 	black = 0x0002;
 	white = 0x0003;
-	for(;i < 16; i++){
-		for(int j = 0; j < 16; j++){
+	for(;i < 15; i++){
+		for(int j = 0; j < 15; j++){
 			if(board[i][j] == GoBang::NO_PIECE){
 				r |= no;
 			}
@@ -504,6 +523,15 @@ bool room::getIsWin() const {
 
 const std::string &room::getWhoWin() const {
 	return whoWin;
+}
+
+int room::getPlayerCount() const {
+	return playerCount;
+}
+
+GoBang::Player &room::getAnotherPlayer(std::string &uid){
+	if(uid == p1.uid()) return p2;
+	if(uid == p2.uid()) return p1;
 }
 
 

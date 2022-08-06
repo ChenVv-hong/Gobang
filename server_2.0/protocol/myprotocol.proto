@@ -53,6 +53,9 @@ enum TYPE{
 
     PLAYER_MESSAGE = 16;
 
+    SOMEONE_JOIN_ROOM = 17;
+    SOMEONE_DISCONNECT = 18;
+
 }
 
 
@@ -165,6 +168,18 @@ message JoinRoomResponse{
     string msg = 2;     //消息
     string rid = 3;     //房间号
 }
+
+//通知玩家有人加入房间
+message SomeoneJoinRoomResponse{
+    bool reconnect = 1;
+    string name = 2;
+}
+
+message SomeoneDisconnectResponse{
+    string uid = 1;
+    string name = 2;
+}
+
 
 //SET_PIECE
 //描述棋子
@@ -348,5 +363,7 @@ message GoBangResponse{
 
         JoinRoomResponse joinRoomResp = 9;
         PlayerMessageResponse playMessageResp = 19;
+        SomeoneJoinRoomResponse someoneJoinRoomResp = 20;
+        SomeoneDisconnectResponse someoneDisconnectResp = 21;
     }
 }

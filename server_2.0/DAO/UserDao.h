@@ -32,10 +32,16 @@ public:
 	 * @param pool	数据库连接连接池
 	 * @param name	用户名
 	 * @param passwd	密码
+	 * @return 返回 1 表示成功插入 返回 0 表示 查询语句出错 返回 -1 表示 插入失败已近存在相同用户名
+	 */
+	int insertUser(connection_pool *pool, const std::string& name, const std::string& passwd);
+	/**
+	 * 更新用户信息
+	 * @param pool
+	 * @param uid
+	 * @param points
 	 * @return
 	 */
-	bool insertUser(connection_pool *pool, const std::string& name, const std::string& passwd);
-
 	bool updateUser(connection_pool *pool, const std::string& uid, int points);
 private:
 	MYSQL *mysql;
