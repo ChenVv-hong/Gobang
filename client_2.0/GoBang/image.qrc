@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/">
+        <file>image/icons8-man-with-mustache-light-skin-tone-48.png</file>
+        <file>image/icons8-old-man-40.png</file>
+        <file>image/user_black.png</file>
+        <file>image/user_red.png</file>
+        <file>image/user_yello.png</file>
+        <file>image/avatar13.png</file>
+        <file>image/avatar11.png</file>
+        <file>image/avatar10.png</file>
+        <file>image/avatar04.png</file>
+        <file>image/123.png</file>
+    </qresource>
+</RCC>

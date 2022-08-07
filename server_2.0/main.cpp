@@ -286,6 +286,7 @@ void addTimeTask(int cfd, const std::string& uid, int timeslot, int option){
 }
 
 void close(){
+	//可以去回收 timer 资源 和一系列的玩家资源
 	threadPool->close();
 	delete threadPool;
 	connectionPool->DestroyPool();
