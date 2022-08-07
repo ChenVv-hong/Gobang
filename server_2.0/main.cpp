@@ -1671,13 +1671,15 @@ void* workThread(void *arg){
 								send(anotherFd, sendBuff, 4 + res.length(), 0);
 
 								pthread_mutex_lock(&mutex);
-								//更新数据
-								int points = onlinePlayers[uid]->points();
-								onlinePlayers[uid]->set_points(points - 10);
-								points = onlinePlayers[allFd[anotherFd]]->points();
-								onlinePlayers[allFd[anotherFd]]->set_points(points + 10);
-								updateList(*onlinePlayers[uid]);
-								updateList(*onlinePlayers[allFd[anotherFd]]);
+								if(onlineRooms[rid]->gametype == 2){
+									//更新数据
+									int points = onlinePlayers[uid]->points();
+									onlinePlayers[uid]->set_points(points - 10);
+									points = onlinePlayers[allFd[anotherFd]]->points();
+									onlinePlayers[allFd[anotherFd]]->set_points(points + 10);
+									updateList(*onlinePlayers[uid]);
+									updateList(*onlinePlayers[allFd[anotherFd]]);
+								}
 								pthread_mutex_unlock(&mutex);
 							}
 						}
